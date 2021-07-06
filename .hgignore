@@ -1,0 +1,38 @@
+# .hgignore for project source
+#
+
+syntax: glob
+
+lib/
+publish/
+langs*/
+test/
+
+# Backup, unit and binary output folders
+backup
+*.code-workspace
+*.orig
+*.bak
+*.~*
+*~
+
+# Archives
+*.zip
+*.gz
+*.tar*
+
+# Unneeded Lazarus files
+*.lps
+*.dbg
+
+
+# any executable
+*.exe
+tasmotasbacker0
+poc/poc
+
+# libraries
+*.dll
+# icon file
+tasmotasbacker0.ico
+poc.ico
