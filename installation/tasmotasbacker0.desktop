@@ -1,0 +1,15 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=0.1.1
+Encoding=UTF-8
+Type=Application
+Exec=/home/$USER/.local/bin/tasmotasbacker0/tasmotasbacker0
+Icon=/home/$USER/.local/bin/tasmotasbacker0/tasmotasbacker.png
+Name=Tasmotas Backer 0
+Name[fr_CA]=Sauvegarde des Tasmotas
+Categories=Network;
+Terminal=false
+Comment=Backup multiple Tasmota device configurations
+Comment[fr_CA]=Sauvegarder la configurations de multiples périphériques Tasmota
+
