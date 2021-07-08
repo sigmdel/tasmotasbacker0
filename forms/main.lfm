@@ -15,7 +15,7 @@ object MainForm: TMainForm
     Height = 298
     Top = 0
     Width = 421
-    PageIndex = 0
+    PageIndex = 3
     Align = alClient
     OnResize = FormResize
     TabOrder = 0
@@ -170,68 +170,7 @@ object MainForm: TMainForm
         TabOrder = 5
         Text = '192.168.0.200'
       end
-      object Label24: TLabel
-        AnchorSideLeft.Control = Label22
-        AnchorSideTop.Control = FirstIPEdit
-        AnchorSideTop.Side = asrBottom
-        Left = 6
-        Height = 14
-        Top = 127
-        Width = 48
-        BorderSpacing.Top = 6
-        Caption = 'Exclude'
-        Enabled = False
-        ParentColor = False
-      end
-      object Memo1: TMemo
-        AnchorSideLeft.Control = Label24
-        AnchorSideTop.Control = Label24
-        AnchorSideTop.Side = asrBottom
-        Left = 14
-        Height = 114
-        Top = 147
-        Width = 120
-        Anchors = [akTop, akLeft, akBottom]
-        BorderSpacing.Left = 8
-        BorderSpacing.Top = 6
-        BorderSpacing.Bottom = 6
-        Enabled = False
-        ScrollBars = ssAutoVertical
-        TabOrder = 6
-        WordWrap = False
-      end
-      object Label25: TLabel
-        AnchorSideLeft.Control = Memo1
-        AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = Label24
-        AnchorSideTop.Side = asrCenter
-        Left = 146
-        Height = 14
-        Top = 127
-        Width = 45
-        BorderSpacing.Left = 12
-        Caption = 'Include'
-        Enabled = False
-        ParentColor = False
-      end
-      object Memo2: TMemo
-        AnchorSideLeft.Control = Label25
-        AnchorSideTop.Control = Memo1
-        AnchorSideBottom.Control = Memo1
-        AnchorSideBottom.Side = asrBottom
-        Left = 152
-        Height = 114
-        Top = 147
-        Width = 120
-        Anchors = [akTop, akLeft, akBottom]
-        BorderSpacing.Left = 6
-        Enabled = False
-        ScrollBars = ssAutoVertical
-        TabOrder = 7
-        WordWrap = False
-      end
       object Label32: TLabel
-        AnchorSideTop.Control = Memo1
         AnchorSideRight.Control = Page1
         AnchorSideRight.Side = asrBottom
         Left = 308
@@ -262,7 +201,7 @@ object MainForm: TMainForm
         OnChange = ScanAttemptsEditChange
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 8
+        TabOrder = 6
         Value = 2
       end
       object Label31: TLabel
@@ -297,7 +236,7 @@ object MainForm: TMainForm
         MaxValue = 300
         MinValue = 1
         OnChange = ScanAttemptsEditChange
-        TabOrder = 9
+        TabOrder = 7
         Value = 2
       end
       object SubnetEdit: TEdit
@@ -312,8 +251,66 @@ object MainForm: TMainForm
         BorderSpacing.Left = 6
         BorderSpacing.Top = 12
         OnEditingDone = SubnetEditDone
-        TabOrder = 10
+        TabOrder = 8
         Text = '192.168.0.0'
+      end
+      object ExcludeListBox: TListBox
+        AnchorSideTop.Side = asrBottom
+        Left = 14
+        Height = 114
+        Top = 147
+        Width = 120
+        Anchors = [akTop, akLeft, akBottom]
+        BorderSpacing.Left = 8
+        BorderSpacing.Top = 6
+        BorderSpacing.Bottom = 6
+        ItemHeight = 0
+        OnDblClick = ExcludeListBoxDblClick
+        ScrollWidth = 118
+        TabOrder = 9
+        TopIndex = -1
+      end
+      object IncludeListBox: TListBox
+        AnchorSideBottom.Side = asrBottom
+        Left = 152
+        Height = 114
+        Top = 147
+        Width = 120
+        Anchors = [akTop, akLeft, akBottom]
+        BorderSpacing.Left = 6
+        ExtendedSelect = False
+        ItemHeight = 0
+        OnDblClick = IncludeListBoxDblClick
+        ScrollWidth = 118
+        TabOrder = 10
+        TopIndex = -1
+      end
+      object ExcludeCheckBox: TCheckBox
+        AnchorSideLeft.Control = Label22
+        AnchorSideTop.Control = FirstIPEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 6
+        Height = 23
+        Top = 127
+        Width = 74
+        BorderSpacing.Top = 6
+        Caption = 'Exclude'
+        Color = clDefault
+        ParentColor = False
+        TabOrder = 11
+      end
+      object IncludeCheckBox: TCheckBox
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Side = asrCenter
+        Left = 146
+        Height = 23
+        Top = 127
+        Width = 71
+        BorderSpacing.Left = 12
+        Caption = 'Include'
+        Color = clDefault
+        ParentColor = False
+        TabOrder = 12
       end
     end
     object Page2: TPage
@@ -683,7 +680,7 @@ object MainForm: TMainForm
         Caption = 'Download timeout'
         ParentColor = False
       end
-      object DowloadTimeoutEdit: TSpinEdit
+      object DownloadTimeoutEdit: TSpinEdit
         AnchorSideTop.Control = Label16
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = Label16
@@ -871,7 +868,7 @@ object MainForm: TMainForm
       end
       object OptionsGrid: TStringGrid
         AnchorSideLeft.Control = Page5
-        AnchorSideTop.Control = CheckBox2
+        AnchorSideTop.Control = AllOptionsCheckBox
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = Page5
         AnchorSideRight.Side = asrBottom
@@ -903,13 +900,13 @@ object MainForm: TMainForm
         FixedCols = 0
         Flat = True
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goSmoothScroll, goCellEllipsis]
-        RowCount = 15
+        RowCount = 17
         TabOrder = 1
         OnClick = GridClick
         OnHeaderSized = GridHeaderSized
         OnSelectCell = DeviceGridSelectCell
       end
-      object CheckBox2: TCheckBox
+      object AllOptionsCheckBox: TCheckBox
         AnchorSideLeft.Control = Page5
         AnchorSideTop.Control = Label14
         AnchorSideTop.Side = asrBottom
@@ -920,7 +917,7 @@ object MainForm: TMainForm
         BorderSpacing.Left = 6
         BorderSpacing.Top = 12
         Caption = 'All'
-        OnChange = CheckBox2Change
+        OnChange = AllOptionsCheckBoxChange
         TabOrder = 0
       end
       object ResetButton: TButton
@@ -958,12 +955,12 @@ object MainForm: TMainForm
     CaptureExceptions = False
     ExceptionDialog = aedOkMessageBox
     OnIdle = ApplicationProperties1Idle
-    Left = 128
-    Top = 208
+    Left = 256
+    Top = 56
   end
   object ImageList1: TImageList
-    Left = 64
-    Top = 176
+    Left = 104
+    Top = 56
     Bitmap = {
       4C69020000001000000010000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1034,8 +1031,8 @@ object MainForm: TMainForm
   end
   object PopupMenu1: TPopupMenu
     OnPopup = PopupMenu1Popup
-    Left = 139
-    Top = 140
+    Left = 168
+    Top = 56
     object MenuItem1: TMenuItem
       Caption = 'Copy to clipboard '
       OnClick = MenuItem1Click

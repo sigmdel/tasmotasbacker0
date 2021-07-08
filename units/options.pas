@@ -17,6 +17,7 @@ const
   DEFAULT_PASSWORD = '';
   DEFAULT_USER = '';
   DEFAULT_TOPIC = 'tasmotas, sonoffs';
+  DEFAULT_MQTT_TIMEOUT = 2;
   {$ENDIF}
 
   {$IFDEF INCLUDE_HTTP_OPTIONS}
@@ -43,24 +44,20 @@ type
   
   { TParams }
 
+  {$IFDEF INCLUDE_HTTP_OPTIONS}
+  TIpListAction = (ilaNothing, ilaSave, ilaErase);
+  {$ENDIF}
+
   TParams = class
   private
     ini: TIniFile;
 
-    {$IFDEF INCLUDE_MQTT_OPTIONS}
-    function GetHost: string;
-    function GetPort: integer;
-    function GetUser: string;
-    function GetPassword: string;
-    function GetTopic: string;
-    procedure SetHost(AValue: string);
-    procedure SetPort(AValue: integer);
-    procedure SetUser(AValue: string);
-    procedure SetPassword(AValue: string);
-    procedure SetTopic(AValue: string);
-    {$ENDIF}
-
     {$IFDEF INCLUDE_HTTP_OPTIONS}
+    FIncludeIPs: TStrings;
+    FExcludeIPs: TStrings;
+    FExcludeIPsAction: TIpListAction;
+    FIncludeIPsAction: TIPListAction;
+
     function GetSubnet: string;
     function GetSubnetBits: integer;
     function GetScanAllIP: boolean;
@@ -68,6 +65,8 @@ type
     function GetLastIP: string;
     function GetScanAttempts: integer;
     function GetScanTimeout: integer;
+    procedure SetExcludeIPs(AValue: TStrings);
+    procedure SetIncludeIPs(AValue: TStrings);
     procedure SetSubnet(AValue: string);
     procedure SetSubnetBits(AValue: integer);
     procedure SetScanAllIP(AValue: boolean);
@@ -75,6 +74,21 @@ type
     procedure SetLastIP(AValue: string);
     procedure SetScanAttempts(AValue: integer);
     procedure SetScanTimeout(AValue: integer);
+    {$ENDIF}
+
+    {$IFDEF INCLUDE_MQTT_OPTIONS}
+    function GetHost: string;
+    function GetPort: integer;
+    function GetUser: string;
+    function GetPassword: string;
+    function GetTopic: string;
+    function GetMqttTimeout: integer;
+    procedure SetHost(AValue: string);
+    procedure SetPort(AValue: integer);
+    procedure SetUser(AValue: string);
+    procedure SetPassword(AValue: string);
+    procedure SetTopic(AValue: string);
+    procedure SetMqttTimeout(AValue: integer);
     {$ENDIF}
 
     function GetDownloadAttempts: integer;
@@ -97,11 +111,12 @@ type
     destructor destroy; override;
 
     {$IFDEF INCLUDE_MQTT_OPTIONS}
-    property host: string read GetHost write SetHost;
-    property port: integer read GetPort write SetPort;
-    property user: string read GetUser write SetUser;
-    property password: string read GetPassword write SetPassword;
-    property topic: string read GetTopic write SetTopic;
+    property Host: string read GetHost write SetHost;
+    property Port: integer read GetPort write SetPort;
+    property User: string read GetUser write SetUser;
+    property Password: string read GetPassword write SetPassword;
+    property Topic: string read GetTopic write SetTopic;
+    property MqttTimeout: integer read GetMqttTimeout write SetMqttTimeout;
     {$ENDIF}
 
     {$IFDEF INCLUDE_HTTP_OPTIONS}
@@ -112,6 +127,10 @@ type
     property LastIP: string read GetLastIP write SetLastIP;
     property ScanAttempts: integer read GetScanAttempts write SetScanAttempts;
     property ScanTimeout: integer read GetScanTimeout write SetScanTimeout;
+    property ExcludeIPs: TStrings read FExcludeIPs write SetExcludeIPs;
+    property ExcludeIPsAction: TIpListAction read FExcludeIPsAction write FExcludeIPsAction;
+    property IncludeIPs: TStrings read FIncludeIPs write SetIncludeIPs;
+    property IncludeIPsAction: TIpListAction read FIncludeIPsAction write FIncludeIPsAction;
     {$ENDIF}
 
     property Directory: string read GetDirectory write SetDirectory;
@@ -143,9 +162,13 @@ const
   Suser = 'User';
   Spassword = 'Password';
   Stopic = 'Topic';
+  SmqttTimeout = 'MqttTimeout';
   {$ENDIF}
 
   {$IFDEF INCLUDE_HTTP_OPTIONS}
+  Sexclude = 'Exclude';
+  Sinclude = 'Include';
+
   Ssubnet = 'Subnet';
   SsubnetBits = 'SubnetBits';
   SscanAllIp = 'ScanAllIP';
@@ -210,6 +233,11 @@ begin
   result := ini.ReadString(Soptions, Stopic, DEFAULT_TOPIC);
 end;
 
+function TParams.GetMqttTimeout: integer;
+begin
+  result := ini.ReadInteger(Soptions, SmqttTimeout, DEFAULT_MQTT_TIMEOUT);
+end;
+
 procedure TParams.SetHost(AValue: string);
 begin
   ini.WriteString(Soptions, Shost, AValue);
@@ -233,6 +261,11 @@ end;
 procedure TParams.SetTopic(AValue: string);
 begin
   ini.WriteString(Soptions, Stopic, AValue);
+end;
+
+procedure TParams.SetMqttTimeout(AValue: integer);
+begin
+  ini.WriteInteger(Soptions, SmqttTimeout, AValue);
 end;
 
 {$ENDIF}
@@ -272,6 +305,16 @@ end;
 function TParams.GetScanTimeout: integer;
 begin
   result := ini.ReadInteger(Soptions, SscanTimeout, DEFAULT_SCAN_TIMEOUT);
+end;
+
+procedure TParams.SetExcludeIPs(AValue: TStrings);
+begin
+  FExcludeIPs.assign(AValue);
+end;
+
+procedure TParams.SetIncludeIPs(AValue: TStrings);
+begin
+  FIncludeIPs.assign(AValue);
 end;
 
 procedure TParams.SetSubnet(AValue: string);
@@ -381,14 +424,49 @@ begin
   ini.writeInteger(Soptions, SfilenameFormat, AValue);
 end;
 
+
 constructor TParams.create;
+{$IFDEF INCLUDE_HTTP_OPTIONS}
+var
+  i: integer;
+{$ENDIF}
 begin
   inherited create;
   ini := TIniFile.create(configfile, []);
+  {$IFDEF INCLUDE_HTTP_OPTIONS}
+  FIncludeIPs := TStringList.create;
+  FExcludeIPs := TStringList.create;
+  ini.ReadSectionValues(Sexclude, FExcludeIPs);
+  ini.ReadSectionValues(Sinclude, FIncludeIPs);
+  for i := 0 to FExcludeIPs.count-1 do
+    FExcludeIPs[i] := FExcludeIPs.ValueFromIndex[i];
+  for i := 0 to FIncludeIPs.count-1 do
+    FIncludeIPs[i] := FIncludeIPs.ValueFromIndex[i];
+  {$ENDIF}
 end;
 
 destructor TParams.destroy;
+{$IFDEF INCLUDE_HTTP_OPTIONS}
+var
+  i: integer;
+{$ENDIF}
 begin
+  {$IFDEF INCLUDE_HTTP_OPTIONS}
+  if ExcludeIPsAction <> ilaNothing then begin
+    ini.EraseSection(Sexclude);
+    if ExcludeIPsAction = ilaSave then begin
+      for i := 0 to FExcludeIPs.count-1 do
+         ini.writeString(Sexclude, Format('%0.3d', [i]), FExcludeIPs[i]);
+    end;
+  end;
+  if IncludeIPsAction <> ilaNothing then begin
+    ini.EraseSection(Sinclude);
+    if IncludeIPsAction = ilaSave then begin
+      for i := 0 to FIncludeIPs.count-1 do
+         ini.writeString(sinclude, Format('%0.3d', [i]), FIncludeIPs[i]);
+    end;
+  end;
+  {$ENDIF}
   ini.free;
   inherited destroy;
 end;

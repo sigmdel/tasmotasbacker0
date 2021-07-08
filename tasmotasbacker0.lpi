@@ -17,6 +17,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MinorVersionNr Value="1"/>
+      <RevisionNr Value="1"/>
       <StringTable CompanyName="sigmdel.ca" LegalCopyright="0BDS" OriginalFilename="tasmotasbacker0" ProductName="Tasmotas Backer 0"/>
     </VersionInfo>
     <BuildModes Count="3">
@@ -118,7 +119,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="8">
       <Unit0>
         <Filename Value="tasmotasbacker0.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -138,6 +139,28 @@
         <Filename Value="units/ipv4.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="forms/ipedit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="IpEditForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="forms/iplistedit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="forms/iplistedit.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="forms/ipedit.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

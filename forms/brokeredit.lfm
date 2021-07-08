@@ -1,0 +1,836 @@
+object BrokerEditForm: TBrokerEditForm
+  Left = 425
+  Height = 414
+  Top = 250
+  Width = 652
+  Caption = 'MQTT Broker Editor'
+  ClientHeight = 414
+  ClientWidth = 652
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poMainFormCenter
+  object Panel1: TPanel
+    Left = 0
+    Height = 42
+    Top = 372
+    Width = 652
+    Align = alBottom
+    Anchors = []
+    AutoSize = True
+    BevelOuter = bvNone
+    ClientHeight = 42
+    ClientWidth = 652
+    TabOrder = 0
+    object LoadButton: TButton
+      Left = 63
+      Height = 30
+      Top = 6
+      Width = 80
+      Align = alLeft
+      BorderSpacing.Top = 6
+      BorderSpacing.Bottom = 6
+      Caption = '&Load...'
+      OnClick = LoadButtonClick
+      TabOrder = 0
+    end
+    object AcceptButton: TButton
+      Left = 591
+      Height = 30
+      Top = 6
+      Width = 55
+      Align = alRight
+      AutoSize = True
+      BorderSpacing.Around = 6
+      Caption = '&Accept'
+      OnClick = AcceptButtonClick
+      TabOrder = 1
+    end
+    object CancelButton: TButton
+      Left = 505
+      Height = 30
+      Top = 6
+      Width = 80
+      Align = alRight
+      BorderSpacing.Top = 6
+      BorderSpacing.Bottom = 6
+      Caption = '&Cancel'
+      OnClick = CancelButtonClick
+      TabOrder = 2
+    end
+    object SaveButton: TButton
+      Left = 6
+      Height = 30
+      Top = 6
+      Width = 51
+      Align = alLeft
+      AutoSize = True
+      BorderSpacing.Around = 6
+      Caption = '&Save...'
+      OnClick = SaveButtonClick
+      TabOrder = 3
+    end
+  end
+  object ListBox1: TListBox
+    Left = 6
+    Height = 366
+    Top = 6
+    Width = 145
+    Align = alLeft
+    BorderSpacing.Left = 6
+    BorderSpacing.Top = 6
+    IntegralHeight = True
+    Items.Strings = (
+      'Broker'
+      'Security'
+      'Encryption'
+      'Publish Topic'
+      'Subscribe Topics'
+    )
+    ItemHeight = 35
+    ItemIndex = 0
+    OnClick = ListBox1Click
+    ScrollWidth = 143
+    Style = lbOwnerDrawFixed
+    TabOrder = 1
+  end
+  object Notebook: TNotebook
+    Left = 151
+    Height = 372
+    Top = 0
+    Width = 501
+    PageIndex = 0
+    Align = alClient
+    Anchors = [akTop, akLeft, akRight]
+    TabOrder = 2
+    object BrokerPage: TPage
+      object Label2: TLabel
+        AnchorSideLeft.Control = BrokerPage
+        AnchorSideTop.Control = BrokerPage
+        Left = 12
+        Height = 14
+        Top = 12
+        Width = 31
+        BorderSpacing.Left = 12
+        BorderSpacing.Top = 12
+        Caption = 'Host:'
+        ParentColor = False
+      end
+      object HostEdit: TEdit
+        AnchorSideLeft.Control = Label2
+        AnchorSideTop.Control = Label2
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = BrokerPage
+        AnchorSideRight.Side = asrBottom
+        Left = 12
+        Height = 27
+        Top = 32
+        Width = 483
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 6
+        BorderSpacing.Right = 6
+        OnEditingDone = HostEditEditingDone
+        TabOrder = 0
+        Text = 'HostEdit'
+      end
+      object Label3: TLabel
+        AnchorSideLeft.Control = Label2
+        AnchorSideTop.Control = PortEdit
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = Label5
+        AnchorSideRight.Side = asrBottom
+        Left = 232
+        Height = 14
+        Top = 77
+        Width = 29
+        Anchors = [akTop, akRight]
+        Caption = 'Port:'
+        ParentColor = False
+      end
+      object PortEdit: TSpinEdit
+        AnchorSideLeft.Control = AutoReconnectCheckBox
+        AnchorSideTop.Control = HostEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 270
+        Height = 27
+        Hint = 'Default MQTT Port: 1883'
+        Top = 71
+        Width = 120
+        BorderSpacing.Top = 12
+        MaxValue = 65365
+        MinValue = 1024
+        OnEditingDone = PortEditEditingDone
+        TabOrder = 1
+        Value = 1883
+      end
+      object Label1: TLabel
+        AnchorSideLeft.Control = Label2
+        AnchorSideTop.Control = KeepAlivesEdit
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = Label5
+        AnchorSideRight.Side = asrBottom
+        Left = 148
+        Height = 14
+        Top = 116
+        Width = 113
+        Anchors = [akTop, akRight]
+        Caption = 'Keep Alive Interval'
+        ParentColor = False
+      end
+      object KeepAlivesEdit: TSpinEdit
+        AnchorSideLeft.Control = AutoReconnectCheckBox
+        AnchorSideTop.Control = PortEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 270
+        Height = 27
+        Top = 110
+        Width = 120
+        BorderSpacing.Top = 12
+        MaxValue = 200000
+        MinValue = 5
+        OnEditingDone = KeepAlivesEditEditingDone
+        TabOrder = 2
+        Value = 1883
+      end
+      object Label4: TLabel
+        AnchorSideLeft.Control = Label2
+        AnchorSideTop.Control = ReconnectDelayEdit
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = Label5
+        AnchorSideRight.Side = asrBottom
+        Left = 157
+        Height = 14
+        Top = 155
+        Width = 104
+        Anchors = [akTop, akRight]
+        Caption = 'Reconnect  Delay'
+        ParentColor = False
+      end
+      object ReconnectDelayEdit: TSpinEdit
+        AnchorSideLeft.Control = AutoReconnectCheckBox
+        AnchorSideTop.Control = KeepAlivesEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 270
+        Height = 27
+        Top = 149
+        Width = 120
+        BorderSpacing.Top = 12
+        MaxValue = 0
+        OnEditingDone = ReconnectDelayEditEditingDone
+        TabOrder = 3
+        Value = 1024
+      end
+      object ReconnectBackoffCheckBox: TCheckBox
+        AnchorSideLeft.Control = AutoReconnectCheckBox
+        AnchorSideTop.Control = ReconnectDelayEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 270
+        Height = 23
+        Top = 188
+        Width = 63
+        BorderSpacing.Top = 12
+        Caption = '(false)'
+        OnChange = ReconnectBackoffCheckBoxChange
+        TabOrder = 4
+      end
+      object Label5: TLabel
+        AnchorSideLeft.Control = Label2
+        AnchorSideTop.Control = ReconnectBackoffCheckBox
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = Label10
+        AnchorSideRight.Side = asrBottom
+        Left = 148
+        Height = 14
+        Top = 192
+        Width = 113
+        Anchors = [akTop, akRight]
+        Caption = 'Reconnect Backoff'
+        ParentColor = False
+      end
+      object Label10: TLabel
+        AnchorSideLeft.Control = Label2
+        AnchorSideTop.Control = AutoReconnectCheckBox
+        AnchorSideTop.Side = asrCenter
+        Left = 133
+        Height = 14
+        Top = 227
+        Width = 128
+        Anchors = [akTop]
+        Caption = 'Automatic Reconnect'
+        ParentColor = False
+      end
+      object AutoReconnectCheckBox: TCheckBox
+        AnchorSideLeft.Control = Label10
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = ReconnectBackoffCheckBox
+        AnchorSideTop.Side = asrBottom
+        Left = 270
+        Height = 23
+        Top = 223
+        Width = 59
+        BorderSpacing.Left = 9
+        BorderSpacing.Top = 12
+        Caption = '(true)'
+        OnChange = AutoReconnectCheckBoxChange
+        TabOrder = 5
+      end
+    end
+    object SecurityPage: TPage
+      object Label6: TLabel
+        AnchorSideTop.Control = SecurityPage
+        Left = 8
+        Height = 14
+        Top = 12
+        Width = 30
+        BorderSpacing.Top = 12
+        Caption = 'User:'
+        ParentColor = False
+      end
+      object Label7: TLabel
+        AnchorSideLeft.Control = Label6
+        AnchorSideTop.Control = UserEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 8
+        Height = 14
+        Top = 71
+        Width = 61
+        BorderSpacing.Top = 12
+        Caption = 'Password:'
+        ParentColor = False
+      end
+      object UserEdit: TEdit
+        AnchorSideLeft.Control = Label6
+        AnchorSideTop.Control = Label6
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = SecurityPage
+        AnchorSideRight.Side = asrBottom
+        Left = 8
+        Height = 27
+        Top = 32
+        Width = 494
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 6
+        BorderSpacing.Right = 6
+        OnEditingDone = UserEditEditingDone
+        TabOrder = 0
+        Text = 'UserEdit'
+      end
+      object PasswordEdit: TEditButton
+        AnchorSideLeft.Control = Label6
+        AnchorSideTop.Control = Label7
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = SecurityPage
+        AnchorSideRight.Side = asrBottom
+        Left = 8
+        Height = 27
+        Top = 91
+        Width = 494
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 6
+        BorderSpacing.Right = 6
+        ButtonWidth = 23
+        EchoMode = emPassword
+        Images = ImageList1
+        ImageIndex = 0
+        ImageWidth = 16
+        MaxLength = 0
+        NumGlyphs = 1
+        OnButtonClick = PasswordEditButtonClick
+        OnEditingDone = PasswordEditEditingDone
+        PasswordChar = '*'
+        TabOrder = 1
+        Text = 'PasswordEdit'
+      end
+    end
+    object EncryptionPage: TPage
+      object Label8: TLabel
+        AnchorSideLeft.Control = EncryptionPage
+        AnchorSideTop.Control = SSLCheckBox
+        AnchorSideTop.Side = asrCenter
+        Left = 12
+        Height = 14
+        Top = 16
+        Width = 66
+        BorderSpacing.Left = 12
+        BorderSpacing.Top = 12
+        Caption = 'Enable SSL'
+        ParentColor = False
+      end
+      object SSLCheckBox: TCheckBox
+        AnchorSideLeft.Control = Label8
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = EncryptionPage
+        Left = 84
+        Height = 23
+        Top = 12
+        Width = 23
+        BorderSpacing.Left = 6
+        BorderSpacing.Top = 12
+        OnEditingDone = SSLCheckBoxEditingDone
+        TabOrder = 0
+      end
+      object Label9: TLabel
+        AnchorSideLeft.Control = Label8
+        AnchorSideTop.Control = SSLCheckBox
+        AnchorSideTop.Side = asrBottom
+        Left = 12
+        Height = 14
+        Top = 47
+        Width = 86
+        BorderSpacing.Top = 12
+        Caption = 'SSL Certificate'
+        ParentColor = False
+      end
+      object SSLCertMemo: TMemo
+        AnchorSideLeft.Control = Label8
+        AnchorSideTop.Control = Label9
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = EncryptionPage
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = EncryptionPage
+        AnchorSideBottom.Side = asrBottom
+        Left = 12
+        Height = 305
+        Top = 67
+        Width = 490
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Top = 6
+        BorderSpacing.Right = 6
+        Lines.Strings = (
+          'Memo1'
+        )
+        OnEditingDone = SSLCertMemoEditingDone
+        TabOrder = 1
+      end
+    end
+    object PublishPage: TPage
+      object Label11: TLabel
+        AnchorSideLeft.Control = PublishPage
+        AnchorSideTop.Control = PublishPage
+        Left = 12
+        Height = 14
+        Top = 12
+        Width = 32
+        BorderSpacing.Left = 12
+        BorderSpacing.Top = 12
+        Caption = 'Topic'
+        ParentColor = False
+      end
+      object Label12: TLabel
+        AnchorSideTop.Control = QoSComboBox
+        AnchorSideTop.Side = asrCenter
+        Left = 12
+        Height = 14
+        Top = 317
+        Width = 141
+        BorderSpacing.Top = 11
+        Caption = 'Quality of Service (QoS)'
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object QoSComboBox: TComboBox
+        AnchorSideLeft.Control = Label12
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Side = asrBottom
+        AnchorSideBottom.Control = PubRetainCheckBox
+        Left = 159
+        Height = 26
+        Top = 311
+        Width = 149
+        Anchors = [akLeft, akBottom]
+        BorderSpacing.Left = 6
+        BorderSpacing.Top = 12
+        ItemHeight = 0
+        ItemIndex = 0
+        Items.Strings = (
+          '0 - at most once'
+          '1 - at least once '
+          '2 - exactly once'
+        )
+        OnChange = QoSComboBoxChange
+        Style = csDropDownList
+        TabOrder = 0
+        Text = '0 - at most once'
+      end
+      object Label13: TLabel
+        AnchorSideLeft.Control = Label11
+        AnchorSideTop.Control = PubRetainCheckBox
+        AnchorSideTop.Side = asrCenter
+        Left = 12
+        Height = 14
+        Top = 353
+        Width = 38
+        Caption = 'Retain'
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object PubRetainCheckBox: TCheckBox
+        AnchorSideLeft.Control = Label13
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = QoSComboBox
+        AnchorSideTop.Side = asrBottom
+        AnchorSideBottom.Control = PublishPage
+        AnchorSideBottom.Side = asrBottom
+        Left = 56
+        Height = 23
+        Top = 349
+        Width = 63
+        Anchors = [akLeft, akBottom]
+        BorderSpacing.Left = 6
+        BorderSpacing.Top = 12
+        Caption = '(false)'
+        OnChange = PubRetainCheckBoxChange
+        TabOrder = 1
+      end
+      object PubTopicEdit: TEdit
+        AnchorSideLeft.Control = Label11
+        AnchorSideTop.Control = Label11
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = PublishPage
+        AnchorSideRight.Side = asrBottom
+        Left = 12
+        Height = 27
+        Top = 32
+        Width = 490
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 6
+        BorderSpacing.Right = 6
+        OnEditingDone = PubTopicEditEditingDone
+        TabOrder = 2
+        Text = 'PubTopicEdit'
+      end
+      object Label14: TLabel
+        AnchorSideLeft.Control = Label11
+        AnchorSideTop.Control = PubTopicEdit
+        AnchorSideTop.Side = asrBottom
+        Left = 12
+        Height = 14
+        Top = 71
+        Width = 49
+        BorderSpacing.Top = 12
+        Caption = 'Payload'
+        ParentColor = False
+      end
+      object PayloadMemo: TMemo
+        AnchorSideLeft.Control = Label11
+        AnchorSideTop.Control = Label14
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = PubTopicEdit
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = QoSComboBox
+        Left = 12
+        Height = 208
+        Top = 91
+        Width = 490
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Top = 6
+        BorderSpacing.Bottom = 12
+        OnEditingDone = PayloadMemoEditingDone
+        ScrollBars = ssAutoVertical
+        TabOrder = 3
+      end
+    end
+    object SubscribePage: TPage
+      object ToolBar: TToolBar
+        AnchorSideLeft.Control = SubscribePage
+        AnchorSideTop.Control = SubscribePage
+        AnchorSideRight.Control = SubscribePage
+        AnchorSideRight.Side = asrBottom
+        Left = 12
+        Height = 24
+        Top = 7
+        Width = 490
+        AutoSize = True
+        BorderSpacing.Left = 12
+        BorderSpacing.Top = 7
+        BorderSpacing.Right = 6
+        Caption = 'ToolBar'
+        Images = ImageList1
+        ImagesWidth = 16
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 0
+        TabStop = True
+        object tbAdd: TToolButton
+          Left = 24
+          Top = 2
+          Action = actAdd
+          ParentShowHint = False
+          ShowHint = True
+        end
+        object tbDelete: TToolButton
+          Left = 47
+          Top = 2
+          Action = actDel
+          ParentShowHint = False
+          ShowHint = True
+        end
+        object tbClear: TToolButton
+          Left = 78
+          Top = 2
+          Action = actClear
+          Caption = 'actClear'
+        end
+        object tbEdit: TToolButton
+          Left = 1
+          Top = 2
+          Action = actEdit
+          ParentShowHint = False
+          ShowHint = True
+        end
+        object ToolButton1: TToolButton
+          Left = 70
+          Height = 22
+          Top = 2
+          Caption = 'ToolButton1'
+          Style = tbsSeparator
+        end
+      end
+    end
+  end
+  object OpenDialog: TOpenDialog
+    Title = 'Open existing file'
+    DefaultExt = '.json'
+    Filter = 'JSON files|*.json|All files|*.*'
+    Options = [ofFileMustExist, ofEnableSizing, ofViewDetail]
+    Left = 80
+    Top = 192
+  end
+  object ActionList1: TActionList
+    Images = ImageList1
+    Left = 24
+    Top = 304
+    object actAdd: TAction
+      Caption = 'Add'
+      Hint = 'Add new topic'
+      ImageIndex = 2
+      OnExecute = actAddExecute
+      ShortCut = 45
+    end
+    object actDel: TAction
+      Caption = 'actDel'
+      Hint = 'Delete the selected topic'
+      ImageIndex = 3
+      OnExecute = actDelExecute
+    end
+    object actEdit: TAction
+      Caption = 'Edit'
+      Hint = 'Edit the selected topic'
+      ImageIndex = 4
+      OnExecute = actEditExecute
+    end
+    object actClear: TAction
+      Caption = 'Clear'
+      Hint = 'Delete all topics'
+      ImageIndex = 5
+      OnExecute = actClearExecute
+    end
+  end
+  object ImageList1: TImageList
+    Left = 24
+    Top = 232
+    Bitmap = {
+      4C69060000001000000010000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00008A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF000000000000
+      00000000000000000000000000000000000000000000000000008A6245FF8A62
+      45FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A62
+      45FF00000000000000000000000000000000000000008A6245FF8A6245FF8A62
+      45FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A62
+      45FF8A6245FF0000000000000000000000008A6245FF8A6245FF8A6245FFE8CD
+      B8FF8A6245FF8A6245FFE8CDB8FFFFFFFFFF8A6245FF8A6245FFE8CDB8FF8A62
+      45FF8A6245FF8A6245FF00000000000000008A6245FF8A6245FFE8CDB8FFE8CD
+      B8FF8A6245FF8A6245FFFFFFFFFFFFFFFFFF8A6245FF8A6245FFE8CDB8FFE8CD
+      B8FF8A6245FF8A6245FF0000000000000000000000008A6245FF8A6245FFE8CD
+      B8FFE8CDB8FF8A6245FF8A6245FF8A6245FF8A6245FFE8CDB8FFE8CDB8FF8A62
+      45FF8A6245FF00000000000000000000000000000000000000008A6245FFE8CD
+      B8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FF8A62
+      45FF000000000000000000000000000000000000000000000000000000008A62
+      45FF8A6245FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FF8A6245FF8A6245FF0000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00008A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000000000000000001B0000
+      00CF000000BF0000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000028000000E10000
+      00FF000000C30000000000000000000000000000000000000000000000000000
+      00008A6245FF8A6245FF8A6245FF8A6245FF6C4D36FF0A0705FF000000FF0000
+      00C40000001100000000000000000000000000000000000000008A6245FF8A62
+      45FF8A6245FF8A6245FF8A6245FF634632FF050403FF000000FF2A1E15FF855F
+      43FF00000000000000000000000000000000000000008A6245FF8A6245FF8A62
+      45FF8A6245FF8A6245FF593F2CFF020201FF000000FF35261BFF886044FF8A62
+      45FF8A6245FF0000000000000000000000008A6245FF8A6245FF8A6245FFE8CD
+      B8FF8A6245FF4D3726FF000000FF000000FF412F21FF896245FFE8CDB8FF8A62
+      45FF8A6245FF8A6245FF00000000000000008A6245FF8A6245FFE8CDB8FFE7CC
+      B7FF402E20FF000000FF000000FF909090FF8A6245FF8A6245FFE8CDB8FFE8CD
+      B8FF8A6245FF8A6245FF0000000000000000000000008A6245FF886044FF584E
+      46FF000000FF020201FF593F2DFF8A6245FF8A6245FFE8CDB8FFE8CDB8FF8A62
+      45FF8A6245FF000000000000000000000000000000000000000A291D15FF0000
+      00FF0A0908FFA79485FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FF8A62
+      45FF0000000000000000000000000000000000000012000000C4000000FF0A07
+      05FF6D4D36FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FF8A6245FF8A6245FF0000
+      000000000000000000000000000000000000000000C3000000FF000000E10000
+      00278A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF000000000000
+      000000000000000000000000000000000000000000BF000000CF0000001B0000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FC00FFFFF7008A6245FF8A6245FF8A6245FF8A6245FFFFFFF700FFFFFC00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FB00FFFFF2008A6245FFE8CDB8FFE8CDB8FF8A6245FFFFFFF200FFFFFA00FFFF
+      FF00FFFFFE00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFC00FFFFFB00FFFF
+      F500FFFFED008A6245FFE8CDB8FFE8CDB8FF8A6245FFFFFFEB00FFFFF500FFFF
+      F900FFFFFC00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFF700FFFFF200FFFF
+      EB00FFFFE6008A6245FFE8CDB8FFE8CDB8FF8A6245FFFFFFE600FFFFEB00FFFF
+      F100FFFFF700FFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FF8A6245FF8A62
+      45FF8A6245FF8A6245FFE8CDB8FFE8CDB8FF8A6245FF8A6245FF8A6245FF8A62
+      45FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FFE8CDB8FFE8CD
+      B8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CD
+      B8FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FFE8CDB8FFE8CD
+      B8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CD
+      B8FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FF8A6245FF8A62
+      45FF8A6245FF8A6245FFE8CDB8FFE8CDB8FF8A6245FF8A6245FF8A6245FF8A62
+      45FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFF800FFFFF200FFFF
+      ED00FFFFE6008A6245FFE8CDB8FFE8CDB8FF8A6245FFFFFFE600FFFFED00FFFF
+      F200FFFFF700FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFC00FFFFFB00FFFF
+      F500FFFFED008A6245FFE8CDB8FFE8CDB8FF8A6245FFFFFFEB00FFFFF500FFFF
+      FB00FFFFFC00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FB00FFFFF2008A6245FFE8CDB8FFE8CDB8FF8A6245FFFFFFF200FFFFFB00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FC00FFFFF7008A6245FF8A6245FF8A6245FF8A6245FFFFFFF700FFFFFC00FDFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FC00FFFFF7008A6245008A6245008A6245008A624500FFFFF700FFFFFC00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FB00FFFFF2008A624500CFAC8B00CFAC8B008A624500FFFFF200FFFFFA00FFFF
+      FF00FFFFFE00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFC00FFFFFB00FFFF
+      F500FFFFED008A624500CFAC8B00CFAC8B008A624500FFFFEB00FFFFF500FFFF
+      F900FFFFFC00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFF700FFFFF200FFFF
+      EB00FFFFE6008A624500CFAC8B00CFAC8B008A624500FFFFE600FFFFEB00FFFF
+      F100FFFFF700FFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FF8A6245FF8A62
+      45FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A62
+      45FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FFE8CDB8FFE8CD
+      B8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CD
+      B8FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FFE8CDB8FFE8CD
+      B8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CDB8FFE8CD
+      B8FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF008A6245FF8A6245FF8A62
+      45FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A6245FF8A62
+      45FF8A6245FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFF800FFFFF200FFFF
+      ED00FFFFE6008A624500CFAC8B00CFAC8B008A624500FFFFE600FFFFED00FFFF
+      F200FFFFF700FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFC00FFFFFB00FFFF
+      F500FFFFED008A624500CFAC8B00CFAC8B008A624500FFFFEB00FFFFF500FFFF
+      FB00FFFFFC00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FB00FFFFF2008A624500CFAC8B00CFAC8B008A624500FFFFF200FFFFFB00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FC00FFFFF7008A6245008A6245008A6245008A624500FFFFF700FFFFFC00FDFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000000000000000AA0F0000
+      B530000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000000000000000AA0F0000B3C80000
+      CBF00000E4380000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000009999990F5050AAA20000CBFE0000
+      E4FF0000FDF00000E83700000000000000000000000000000000000000000000
+      00000000000000000000000000009999990FA3A3A3C8C2C2C2FF6C6CE1C40000
+      FDFE0000E7FF0000CDF00000B131000000000000000000000000000000000000
+      000000000000000000003355990F2A79B0B8A0C3C8DDE0E0E0FFFFFFFFFF6F6F
+      E5C10000CDFD0000B3CC0000A511000000000000000000000000000000000000
+      0000000000003355990F2477B0C80EC9E0FF02F4F4EBCFF7F8DDE1E1E1FFC2C2
+      C2FF5252ADA20000AA0F00000000000000000000000000000000000000000000
+      00003355990F2477B0C80EC9E0FF00F4F4FF04D4DBFF12B1CAEBA2B7C0DBA4A4
+      A4CC969696110000000000000000000000000000000000000000000000003355
+      990F2477B0C80EC9E0FF00F4F4FF04D4DBFF10B0C9FF1C8BB8FF2E6AA7B79999
+      990F0000000000000000000000000000000000000000000000003355990F2476
+      B0C70EC9E0FF00F4F4FF04D4DBFF10B0C9FF1C8BB8FF2867A6CC2D5AA5110000
+      000000000000000000000000000000000000000000003355990F2476B0C70EC9
+      E0FF00F4F4FF04D4DBFF10B0C9FF1C8BB8FF2867A6CC2D5AA511000000000000
+      000000000000000000000000000000000000000000004C85C6900FC9DFFC00F4
+      F4FF04D4DBFF10B0C9FF1C8BB8FF2867A6C83355990F00000000000000000000
+      000000000000000000000000000000000000618DD31D5F8DD3FC519CD8C605D3
+      DBFB10B0C9FF1C8BB8FF2867A6CC2D5AA5110000000000000000000000000000
+      0000000000000000000000000000000000005B86C7895F8DD3FF5F8DD3FF5492
+      D2C61D8BB8FB2867A6CC2D5AA511000000000000000000000000000000000000
+      00000000000000000000000000004D66800A3A414BFB567AB2FF5F8DD3FF5F8D
+      D3FC4E80C5903355990F00000000000000000000000000000000000000000000
+      000000000000000000000000000035353556333333FF39414BFB5C86C98D608F
+      CF20000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000003131312F353535564D66800A000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000000000000500B66C0500
+      B66C0000000000000000000000000000000000000000000000000500B6690500
+      B66900000000000000000000000000000000000000000200B5680C00CFE90D00
+      D0EB0500B66D000000000000000000000000000000000200B56B0C00CFE90D00
+      D0EB0500B86B000000000000000000000000000000000200B5680C00CFE91400
+      E6FF0D00D0EB0500B66D00000000000000000200B56B0C00CFE91400E6FF0D00
+      D0EB0500B86B00000000000000000000000000000000000000000300B6650C00
+      CFE91400E6FF0D00D1EB0500B66D0300B7660C00CFE91400E6FF0D00D1EB0500
+      B66D000000000000000000000000000000000000000000000000000000000500
+      B66C0C00CFEA1400E6FF0C00D0EA0C00D0EA1400E6FF0C00CFEA0500B66C0000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000200B56B0C00D0E81400E6FF1400E6FF0D00D0EB0500B66D000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000200B56B0C00D0E81400E6FF1400E6FF0D00D0EB0500B66D000000000000
+      0000000000000000000000000000000000000000000000000000000000000500
+      B66C0C00CFEA1400E6FF0C00D0EA0C00D0EA1400E6FF0C00CFEA0500B66C0000
+      00000000000000000000000000000000000000000000000000000300B7660C00
+      CFE91400E6FF0D00D1EB0500B66D0300B6650C00CFE91400E6FF0D00D1EB0500
+      B66D00000000000000000000000000000000000000000200B5680C00CFE91400
+      E6FF0D00D0EB0500B66D00000000000000000200B56B0C00CFE91400E6FF0D00
+      D0EB0500B86B000000000000000000000000000000000200B5680C00CFE90D00
+      D0EB0500B66D000000000000000000000000000000000200B56B0C00CFE90D00
+      D0EB0500B86B00000000000000000000000000000000000000000500B6690500
+      B6690000000000000000000000000000000000000000000000000500B6690500
+      B669000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000
+    }
+  end
+  object SaveDialog: TSaveDialog
+    Title = 'Save file as'
+    DefaultExt = '.json'
+    Filter = 'JSON files|*.json|All files|*.*'
+    Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
+    Left = 80
+    Top = 264
+  end
+end

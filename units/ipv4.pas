@@ -39,8 +39,10 @@ type
       2: (Value: Longword);
   end;
 
+
 function StrToIPv4(const S: String): TIPv4;
 function TryStrToIPv4(const S: String; out ip: TIPv4): boolean;
+function ValidIPv4(const S: string): boolean;
 function IPv4ToStr(const AIPv4: TIPv4): String;
 function IPv4Compare(const AIPv41, AIPv42: TIPv4): Integer;
 function IPv4Succ(const aIPv4: TIPv4): TIPv4;
@@ -207,6 +209,13 @@ begin
     ip.Value := 0;
     result := false;
   end;
+end;
+
+function ValidIPv4(const S: string): boolean;
+var
+  ip: TIPv4;
+begin
+  result := TryStrToIPv4(S, ip);
 end;
 
 function IPv4ToStr(const AIPv4: TIPv4): String;

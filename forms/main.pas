@@ -4,66 +4,13 @@ unit main;
 
 interface
 
-(*
-  About HTTP request timeouts:
-
-
-In principle, a call to HttpRequest with a 1500 milliseconds
-    HttpRequest('192.168.0.4', code, data, 2, 1500)
-will result in a call to
-    TSocketStream.SetIOTimeout(1500) in ssockets.
-
-Looking at
-
-    procedure TSocketStream.SetIOTimeout(AValue: Integer);
-
-    Var
-      E : Boolean;
-    {$ifdef windows}
-      opt: DWord;
-    {$endif windows}
-    {$ifdef unix}
-      time: ttimeval;
-    {$endif unix}
-
-    begin
-      if FIOTimeout=AValue then Exit;
-      FIOTimeout:=AValue;
-
-      {$ifdef windows}
-      opt := AValue;
-      E:=fpsetsockopt(Handle, SOL_SOCKET, SO_RCVTIMEO, @opt, 4)<>0;
-      if not E then
-        E:=fpsetsockopt(Handle, SOL_SOCKET, SO_SNDTIMEO, @opt, 4)<>0;
-      {$endif windows}
-      {$ifdef unix}
-      time.tv_sec:=avalue div 1000;
-      time.tv_usec:=(avalue mod 1000) * 1000;
-      E:=fpsetsockopt(Handle, SOL_SOCKET, SO_RCVTIMEO, @time, sizeof(time))<>0;
-    ...
-
-we see that in Unix time will be set as follows
-  time.tv_sec  = 1
-  time.tv_usec = 500000
-which does correspond to 1.5 seconds. However when timing the request it
-looks very much like the microseconds are completely ignored to the effective
-time out is
-  avalue div 1000 seconds
-which means the ms value is rounded down to the biggest multiple of 1000 equal or
-less than the ma value.
-
-So that means that  HttpRequest('192.168.0.4', code, data, 2, 250)
-will timeout immediately in Linux
-*)
-
-
 // Set these defines to help in determining the timeout and retry
 // parameters of the HTTP request function
 // See log() function below
 //
-{$DEFINE DEBUG_HTTP_REQUEST}
+{ -- $DEFINE DEBUG_HTTP_REQUEST}
 { -- $DEFINE DEBUG_BACKUP}
-{$DEFINE DEBUG_HTTP_SCAN}
+{ -- $DEFINE DEBUG_HTTP_SCAN}
 { -- $DEFINE TIME_HTTP_SCAN}   // this will not update the found devices
 
 uses
@@ -85,14 +32,14 @@ type
     Label21: TLabel;
     Label22: TLabel;
     Label23: TLabel;
-    Label24: TLabel;
-    Label25: TLabel;
+    ExcludeCheckBox: TCheckBox;
+    IncludeCheckBox: TCheckBox;
     Label26: TLabel;
     Label31: TLabel;
     Label32: TLabel;
     LastIPEdit: TEdit;
-    Memo1: TMemo;
-    Memo2: TMemo;
+    ExcludeListBox: TListBox;
+    IncludeListBox: TListBox;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
@@ -101,7 +48,7 @@ type
     FullRangeRadioButton: TRadioButton;
     RadioButton8: TRadioButton;
     ResetButton: TButton;
-    CheckBox2: TCheckBox;
+    AllOptionsCheckBox: TCheckBox;
     DateFormatEdit: TComboBox;
     DeviceGrid: TStringGrid;
     Label15: TLabel;
@@ -128,7 +75,7 @@ type
     ScanTimeoutEdit: TSpinEdit;
     SubnetBitsEdit: TSpinEdit;
     SubnetEdit: TEdit;
-    DowloadTimeoutEdit: TSpinEdit;
+    DownloadTimeoutEdit: TSpinEdit;
     Label11: TLabel;
     Label12: TLabel;
     Page4: TPage;
@@ -148,13 +95,15 @@ type
     procedure ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
     procedure Back2ButtonClick(Sender: TObject);
     procedure FirstIPEditEditingDone(Sender: TObject);
+    procedure ExcludeListBoxDblClick(Sender: TObject);
+    procedure IncludeListBoxDblClick(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure PopupMenu1Close(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure ResetButtonClick(Sender: TObject);
-    procedure CheckBox2Change(Sender: TObject);
+    procedure AllOptionsCheckBoxChange(Sender: TObject);
     procedure DateFormatEditChange(Sender: TObject);
     procedure DeviceGridSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
@@ -195,12 +144,11 @@ type
     updategrid: TObject;
     newdev: boolean;
     fip, lip: TIPv4;
-    function SecondsToStr(value: integer): string;
     procedure FixupAllIpHint;
     procedure FixupIpRangeHint;
     function GetExtension: string;
-    procedure UpdateCheckCount;
     procedure GetDevicesWithHttpScan;
+    procedure UpdateCheckCount;
     procedure CopyResGridToClipbrd(delim: char);
   public
 
@@ -212,7 +160,7 @@ var
 implementation
 
 uses
-  clipbrd, fileinfo, options, ssockets, fphttpclient;
+  clipbrd, fileinfo, options, ssockets, fphttpclient, iplistEdit;
 
 {$R *.lfm}
 
@@ -232,6 +180,8 @@ uses
 {$IFDEF DEFINE TIME_HTTP_SCAN}
   {$DEFINE DO_LOG}
 {$ENDIF}
+
+{  Utility functions }
 
 {$IFDEF DO_LOG}
 
@@ -379,7 +329,32 @@ begin
   end;
 end;
 
+// Converts value seconds into a  'xx minutes xx seconds' string
+// if value < 120 then no minutes shown
+function SecondsToStr(value: integer): string;
+begin
+  if value <= 0 then
+    result := ''
+  else if value < 120 then
+    result := Format(' %d seconds', [value])
+  else
+    result := Format(' %d minutes%s', [value div 60, SecondsToStr(value mod 60)]);
+end;
+
 { TMainForm }
+
+procedure TMainForm.AllOptionsCheckBoxChange(Sender: TObject);
+var
+  b: string;
+  i: integer;
+begin
+  if AllOptionsCheckBox.Checked then
+    b := '1'
+  else
+    b := '0';
+  for i := 0 to OptionsGrid.RowCount-1 do
+    OptionsGrid.cells[0, i] := b;
+end;
 
 procedure TMainForm.ApplicationProperties1Idle(Sender: TObject;
   var Done: Boolean);
@@ -402,125 +377,6 @@ begin
   Notebook1.PageIndex := 0;
 end;
 
-procedure TMainForm.FirstIPEditEditingDone(Sender: TObject);
-begin
-  FixupIpRangeHint;
-end;
-
-procedure TMainForm.MenuItem1Click(Sender: TObject);
-var
-  delim: char;
-begin
-  if MenuItem3.checked then
-    delim := #9
-  else
-    delim := ',';
-  CopyResGridToClipbrd(delim);
-end;
-
-procedure TMainForm.MenuItem2Click(Sender: TObject);
-begin
-  PopupMenu1.popup(popx, popy);
-end;
-
-procedure TMainForm.MenuItem3Click(Sender: TObject);
-begin
-  PopupMenu1.popup(popx, popy);
-end;
-
-procedure TMainForm.PopupMenu1Close(Sender: TObject);
-begin
-  PopupMenu1.tag := 0;
-end;
-
-procedure TMainForm.PopupMenu1Popup(Sender: TObject);
-begin
-  PopupMenu1.tag := 1;
-end;
-
-procedure TMainForm.ResetButtonClick(Sender: TObject);
-var
-  i: integer;
-begin
-  for i := 1 to OptionsGrid.Rowcount-1 do begin
-    if OptionsGrid.cells[0, i] = '0' then
-       continue;
-    case i of
-       1: params.Subnet := DEFAULT_SUBNET;
-       2: params.SubnetBits := DEFAULT_SUBNET_BITS;
-       3: params.ScanAllIP := DEFAULT_SCAN_ALL_IP;
-       4: params.FirstiP := DEFAULT_FIRST_IP;
-       5: params.LastIP := DEFAULT_LAST_IP;
-       6: params.ScanAttempts := DEFAULT_SCAN_ATTEMPTS;
-       7: params.ScanTimeout := DEFAULT_SCAN_TIMEOUT;
-       8: params.Directory := DEFAULT_BACK_DIRECTORY;
-       9: params.Extension := DEFAULT_EXTENSION;
-      10: params.Dateformat := DEFAUT_DATE_FORMAT;
-      11: params.FilenameFormat := DEFAULT_FILENAME_FORMAT;
-      12: params.DeviceName := DEFAULT_DEVICE_NAME;
-      13: params.DownloadAttempts := DEFAULT_DOWNLOAD_ATTEMPTS;
-      14: params.DownloadTimeout := DEFAULT_DOWNLOAD_TIMEOUT;
-     end;
-  end;
-  close;
-end;
-
-procedure TMainForm.CheckBox2Change(Sender: TObject);
-var
-  b: string;
-  i: integer;
-begin
-  if CheckBox2.Checked then
-    b := '1'
-  else
-    b := '0';
-  for i := 0 to OptionsGrid.RowCount-1 do
-    OptionsGrid.cells[0, i] := b;
-end;
-
-procedure TMainForm.DateFormatEditChange(Sender: TObject);
-begin
-   DateEdit.DateOrder := TDateOrder(DateFormatEdit.ItemIndex + 1);
-end;
-
-procedure TMainForm.DeviceGridSelectCell(Sender: TObject; aCol, aRow: Integer;
-  var CanSelect: Boolean);
-begin
-   currentcol := aCol;
-   CanSelect := aCol = 0;
-end;
-
-procedure TMainForm.FormDestroy(Sender: TObject);
-begin
-  //MqttClient.free;
-end;
-
-procedure TMainForm.FormResize(Sender: TObject);
-begin
-  if not resizinggrid then begin
-    resizinggrid := true;
-    {
-    try
-      GridResize(DeviceGrid);
-      GridResize(ResGrid);
-      GridResize(OptionsGrid);
-    finally
-      invalidate;
-    end;
-    }
-    try
-      case Notebook1.PageIndex of
-        1: GridResize(DeviceGrid);
-        3: GridResize(ResGrid);
-        4: GridResize(OptionsGrid);
-        else exit;
-      end;
-      invalidate;
-    finally
-      resizinggrid := false;
-    end;
-  end;
-end;
 
 procedure TMainForm.BackButtonClick(Sender: TObject);
 begin
@@ -537,61 +393,68 @@ var
   code, count: integer;
 begin
   Notebook1.PageIndex := 3;
-  OptionsButton.setFocus;
   Notebook1.Invalidate;
   Notebook1.Update;
   Label19.caption := ExpandFilename(DirectoryEdit.Directory);
   application.ProcessMessages;
-  count := 0;
-  for i := 1 to DeviceGrid.RowCount-1 do begin
-    ip := trim(DeviceGrid.cells[1, i]);
-    if radioButton3.checked then
-      device := trim(DeviceGrid.cells[2, i])
-    else
-      device := trim(DeviceGrid.cells[3, i]);
-     aRow := ResGrid.RowCount;
-     ResGrid.RowCount := aRow + 1;
-     ResGrid.Cells[0, aRow] := ip;
-     ResGrid.Cells[1, aRow] := device;
-     if DeviceGrid.cells[0, i] = '0' then
-       resstring := 'not selected'
-     else begin
-       if radiobutton1.checked then begin
-         s1 := trim(device);
-         s2 := DateEdit.Text;
-       end
+  screen.Cursor := crHourglass;
+  OptionsButton.enabled := false;
+  try
+    count := 0;
+    for i := 1 to DeviceGrid.RowCount-1 do begin
+      ip := trim(DeviceGrid.cells[1, i]);
+      if radioButton3.checked then
+        device := trim(DeviceGrid.cells[2, i])
+      else
+        device := trim(DeviceGrid.cells[3, i]);
+       aRow := ResGrid.RowCount;
+       ResGrid.RowCount := aRow + 1;
+       ResGrid.Cells[0, aRow] := ip;
+       ResGrid.Cells[1, aRow] := device;
+       if DeviceGrid.cells[0, i] = '0' then
+         resstring := 'not selected'
        else begin
-         s1 := DateEdit.Text;
-         s2 := trim(device);
-       end;
-       device := Format('%s%s%s-%s%s',
-         [DirectoryEdit.Directory,  DirectorySeparator, s1, s2, GetExtension]);
-       if count = 0 then
-         ForceDirectories(DirectoryEdit.Directory);
-       url := 'http://' + ip + '/dl';
-       html := '';
-       {$IFDEF DEBUG_BACKUP}
-       log('Backup - reading '+ url);
-       {$ENDIF}
-
-       if HttpRequest(url, code, html, DownloadAttemptsEdit.value,
-         DowloadTimeoutEdit.value*1000) and (html <> '') then begin
-         SaveStringToFile(html, device);
+         if radiobutton1.checked then begin
+           s1 := trim(device);
+           s2 := DateEdit.Text;
+         end
+         else begin
+           s1 := DateEdit.Text;
+           s2 := trim(device);
+         end;
+         device := Format('%s%s%s-%s%s',
+           [DirectoryEdit.Directory,  DirectorySeparator, s1, s2, GetExtension]);
+         if count = 0 then
+           ForceDirectories(DirectoryEdit.Directory);
+         url := 'http://' + ip + '/dl';
+         html := '';
          {$IFDEF DEBUG_BACKUP}
-         log(' Saved to ' + device);
+         log('Backup - reading '+ url);
          {$ENDIF}
-         resstring := Format('saved to %s', [extractFilename(device)]);
-       end
-       else begin
-         resstring := Format('http error %d', [code]);
+
+         if HttpRequest(url, code, html, DownloadAttemptsEdit.value,
+           DownloadTimeoutEdit.value*1000) and (html <> '') then begin
+           SaveStringToFile(html, device);
+           {$IFDEF DEBUG_BACKUP}
+           log(' Saved to ' + device);
+           {$ENDIF}
+           resstring := Format('saved to %s', [extractFilename(device)]);
+         end
+         else begin
+           resstring := Format('http error %d', [code]);
+         end;
+         inc(count);
        end;
-       inc(count);
-     end;
-     ResGrid.Cells[2, aRow] := resstring;
-     ResGrid.invalidate;
-     ResGrid.Update;
-     application.ProcessMessages;
+       ResGrid.Cells[2, aRow] := resstring;
+       ResGrid.invalidate;
+       ResGrid.Update;
+       application.ProcessMessages;
+    end;
+  finally
+    screen.Cursor := crDefault;
   end;
+  OptionsButton.enabled := true;
+  OptionsButton.setFocus;
 end;
 
 procedure TMainForm.CheckBox1Change(Sender: TObject);
@@ -621,9 +484,26 @@ begin
   end;
 end;
 
+procedure TMainForm.DateFormatEditChange(Sender: TObject);
+begin
+   DateEdit.DateOrder := TDateOrder(DateFormatEdit.ItemIndex + 1);
+end;
+
+procedure TMainForm.DeviceGridSelectCell(Sender: TObject; aCol, aRow: Integer;
+  var CanSelect: Boolean);
+begin
+   currentcol := aCol;
+   CanSelect := aCol = 0;
+end;
+
 procedure TMainForm.DeviceListClickCheck(Sender: TObject);
 begin
   UpdateCheckCount;
+end;
+
+procedure TMainForm.ExcludeListBoxDblClick(Sender: TObject);
+begin
+  EditIPList(ExcludeListBox.Items)
 end;
 
 procedure TMainForm.ExtensionEditChange(Sender: TObject);
@@ -633,6 +513,38 @@ begin
   newext := GetExtension;
   RadioButton1.Caption := ChangeFileExt(RadioButton1.caption, newext);
   RadioButton2.Caption := ChangeFileExt(RadioButton2.caption, newext);
+end;
+
+procedure TMainForm.FirstIPEditEditingDone(Sender: TObject);
+begin
+  FixupIpRangeHint;
+end;
+
+procedure TMainForm.FixupAllIpHint;
+var
+  mask: TIPv4;
+  ttime: integer;
+begin
+  mask := not SubnetMask(SubnetBitsEdit.value);
+  ttime := (mask.value - 2) * ScanAttemptsEdit.value * ScanTimeoutEdit.value;
+  //FullRangeRadioButton.Hint := Format('Could take up to %d seconds', [ttime]);
+  FullRangeRadioButton.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
+end;
+
+procedure TMainForm.FixupIpRangeHint;
+var
+  lfip, llip: TIpv4;
+  ttime: integer;
+begin
+  if TryStrToIPv4(FirstIpEdit.text, lfip)
+  and TryStrToIPv4(LastIpEdit.text, llip) then begin
+    ttime := (llip.value - lfip.value + 1) *  ScanAttemptsEdit.value * ScanTimeoutEdit.value;
+    //RadioButton8.Hint := Format('Could take up to %d seconds', [ttime]);
+    RadioButton8.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
+    label23.Hint := RadioButton8.Hint;
+    FirstIPEdit.Hint := RadioButton8.Hint;
+    LastIPEdit.Hint := RadioButton8.Hint;
+  end;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -665,15 +577,48 @@ begin
   else
     RadioButton4.Checked := true;
   DownloadAttemptsEdit.Value := params.DownloadAttempts;
-  DowloadTimeoutEdit.Value := params.DownloadTimeout;
+  DownloadTimeoutEdit.Value := params.DownloadTimeout;
   ScanAttemptsEdit.value := params.ScanAttempts;
   ScanTimeoutEdit.Value := params.ScanTimeout;
-
+  IncludeListBox.Items.assign(params.IncludeIPs);
+  ExcludeListBox.Items.assign(params.ExcludeIPs);
   FixupAllIpHint;
   FixupIpRangeHint;
 end;
 
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  // nothing to do
+end;
 
+procedure TMainForm.FormResize(Sender: TObject);
+begin
+  if not resizinggrid then begin
+    resizinggrid := true;
+    {
+    try
+      GridResize(DeviceGrid);
+      GridResize(ResGrid);
+      GridResize(OptionsGrid);
+    finally
+      invalidate;
+    end;
+    }
+    try
+      case Notebook1.PageIndex of
+        1: GridResize(DeviceGrid);
+        3: GridResize(ResGrid);
+        4: GridResize(OptionsGrid);
+        else exit;
+      end;
+      invalidate;
+    finally
+      resizinggrid := false;
+    end;
+  end;
+end;
+
+(*
 procedure TMainForm.GetDevicesWithHttpScan;
 const
   URLB = 'http://%s/cm?cmnd=';
@@ -686,6 +631,11 @@ var
   {$ELSE}
   r: integer;
   {$ENDIF}
+
+  excount: integer;
+  incount: integer;
+  i: integer;
+  ip: TIPv4;
 
   function FindValue(const key: string; var value: string): boolean;
   var
@@ -755,8 +705,142 @@ begin
   finally
     Screen.Cursor := crDefault;
     next2Button.Enabled := true;
+    next2Button.SetFocus;
   end;
 end;
+*)
+
+procedure TMainForm.GetDevicesWithHttpScan;
+const
+  URLB = 'http://%s/cm?cmnd=';
+var
+  myHostname, myTopic, myIps: string;
+  code: integer;
+  url: string;
+  {$IFDEF TIME_HTTP_SCAN}
+  deb, fin: TDateTime;
+  {$ELSE}
+  r: integer;
+  {$ENDIF}
+
+  excount: integer;
+  incount: integer;
+  i, j: integer;
+  ip: TIPv4;
+  v, fv, lv: longword;
+
+
+  function FindValue(const key: string; var value: string): boolean;
+  var
+    p: integer;
+  begin
+    result := true;
+    p := pos('"' + key + '":"', value);
+    if p > 0 then begin
+      delete(value, 1, p + length(key)+3);
+      p := pos('"', value);
+      if p > 0 then begin
+        delete(value, p, maxint);
+        exit;
+      end;
+    end;
+    value := '';
+    result := false;
+  end;
+
+  procedure CheckIP(aIP: TIPv4);
+  begin
+    myIps := aip.ToString;
+    url := Format(URLB, [myIps]);
+    myHostname := '';
+    myTopic := '';
+    {$IFNDEF TIME_HTTP_SCAN}
+    label11.Caption := 'Checking ' + myIps;
+    label11.Repaint;
+    delay(2);
+    {$ENDIF}
+    if not HttpRequest(url + 'hostname', code, myHostname, ScanAttemptsEdit.value, ScanTimeOutEdit.value*1000) then
+    //if not HttpRequest(url + 'hostname', code, myHostname) then
+      exit;
+    if not FindValue('Hostname', myHostname) then
+      exit;
+    if not HttpRequest(url + 'topic', code, myTopic, ScanAttemptsEdit.value, ScanTimeOutEdit.value*1000) then
+    //if not HttpRequest(url + 'topic', code, myTopic) then
+      exit;
+    if not FindValue('Topic', myTopic) then
+      exit;
+    {$IFNDEF TIME_HTTP_SCAN}
+    with DeviceGrid do begin
+       r := RowCount;
+       RowCount := RowCount+1;
+       cells[0, r] := '1';
+       cells[1, r] := myIps;
+       cells[2, r] := myTopic;
+       cells[3, r] := myHostname;
+       MainForm.newdev := true;
+    end;
+    notebook1.invalidate;
+    Delay(2);
+    {$ENDIF}
+  end;
+
+begin
+  Next2Button.Enabled := false;
+  Screen.Cursor := crHourGlass;
+  {$IFDEF TIME_HTTP_SCAN}
+  deb := time;
+  {$ENDIF}
+  excount := 0;
+  incount := 0;
+  // get valid excluded IPs
+  if ExcludeCheckBox.checked then begin
+    for i := 0 to ExcludeListBox.count-1 do begin
+      if (not ip.TryFromString(ExcludeListBox.Items[i]))
+      or (ip < fip) or (ip > lip) then
+        continue;
+      ExcludeListBox.Items.Objects[excount] := TObject(intptr(ip.value));
+      inc(excount);
+    end;
+  end;
+  // get valid incldued IPs
+  if IncludeCheckBox.checked then begin
+    for i := 0 to IncludeListBox.count-1 do begin
+      if (not ip.TryFromString(IncludeListBox.Items[i]))
+      or ((fip <= ip) and (ip <= lip)) then
+        continue;
+      IncludeListBox.Items.Objects[incount] := TObject(intptr(ip.value));
+      inc(incount);
+    end;
+  end;
+  fv := fip.value;
+  lv := lip.value;
+  try
+    for v := fv to lv do begin
+      ip.value := v;
+      // check if it is in excluded IP
+      for j := 0 to excount-1 do
+        if longword(ptrint(ExcludeListBox.Items.Objects[j])) = v then begin
+          ip.value := 0;
+          break;
+        end;
+      if ip.value <> 0 then
+        CheckIp(ip);
+    end;
+    for i := 0 to incount-1 do begin
+      ip.value := longword(ptrint(IncludeListBox.Items.Objects[i]));
+      CheckIp(ip);
+    end;
+    {$IFDEF TIME_HTTP_SCAN}
+    fin := now;
+    log(Format('HTTP scan time: %s ms', [TimeToStr(fin-deb)]));
+    {$ENDIF}
+  finally
+    Screen.Cursor := crDefault;
+    next2Button.Enabled := true;
+    next2Button.SetFocus;
+  end;
+end;
+
 
 function TMainForm.GetExtension: string;
 begin
@@ -779,24 +863,6 @@ begin
   end;
 end;
 
-procedure TMainForm.Page2BeforeShow(ASender: TObject; ANewPage: TPage;
-  ANewIndex: Integer);
-begin
-  updategrid := DeviceGrid;
-end;
-
-procedure TMainForm.Page4BeforeShow(ASender: TObject; ANewPage: TPage;
-  ANewIndex: Integer);
-begin
-  updategrid := ResGrid;
-end;
-
-procedure TMainForm.Page5BeforeShow(ASender: TObject; ANewPage: TPage;
-  ANewIndex: Integer);
-begin
-  updategrid := OptionsGrid;
-end;
-
 procedure TMainForm.GridHeaderSized(Sender: TObject; IsColumn: Boolean;
   Index: Integer);
 begin
@@ -816,20 +882,30 @@ begin
   end;
 end;
 
-
-procedure TMainForm.ResGridDblClick(Sender: TObject);
+procedure TMainForm.IncludeListBoxDblClick(Sender: TObject);
 begin
-  CopyResGridToClipbrd(#9);
+  EditIPList(IncludeListBox.Items)
 end;
 
-procedure TMainForm.ResGridMouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
+procedure TMainForm.MenuItem1Click(Sender: TObject);
+var
+  delim: char;
 begin
-  if (PopupMenu1.tag = 0) and (Button = mbRight) then begin
-    popx := left + x;
-    popy := top + y;
-    PopupMenu1.PopUp(popx, popy);
-  end;
+  if MenuItem3.checked then
+    delim := #9
+  else
+    delim := ',';
+  CopyResGridToClipbrd(delim);
+end;
+
+procedure TMainForm.MenuItem2Click(Sender: TObject);
+begin
+  PopupMenu1.popup(popx, popy);
+end;
+
+procedure TMainForm.MenuItem3Click(Sender: TObject);
+begin
+  PopupMenu1.popup(popx, popy);
 end;
 
 procedure TMainForm.Next1ButtonClick(Sender: TObject);
@@ -859,6 +935,21 @@ begin
 end;
 
 procedure TMainForm.OptionsButtonClick(Sender: TObject);
+
+  function ListIPs(list: TStrings): string;
+  var
+    i: integer;
+  begin
+    result := '';
+    if list.count > 0 then begin
+      result := list[0];
+      if list.count > 1 then begin
+        result := result + ', ' + list[1];
+        if list.count > 2 then
+          result := result + '...';
+      end;
+    end;
+  end;
 
   procedure setCb(row: integer; const current: string);
   var
@@ -917,22 +1008,22 @@ begin
     else
       cells[0, 7] := '1';
 
-    cells[1, 8] := 'Backup Directory';
+    cells[1, 8] := 'Backup directory';
     cells[2, 8] := DirectoryEdit.Directory;
     setCb(8, params.directory);
 
-    cells[1, 9] := 'Backup Extension';
+    cells[1, 9] := 'Backup extension';
     cells[2, 9] := ExtensionEdit.Text;
     setCb(9, params.extension);
 
-    cells[1, 10] := 'Date Format';
+    cells[1, 10] := 'Date format';
     cells[2, 10] := DateformatEdit.Text;
     if DateformatEdit.ItemIndex = params.dateformat then
       cells[0, 10] := '0'
     else
       cells[0, 10] := '1';
 
-    cells[1, 11] := 'Filename Format';
+    cells[1, 11] := 'Filename format';
     if radioButton1.Checked then
       cells[2, 11] := ChangeFileExt(radiobutton1.caption, '')
     else
@@ -943,7 +1034,7 @@ begin
     else
       cells[0, 11] := '1';
 
-    cells[1, 12] := 'Device Name';
+    cells[1, 12] := 'Device name';
     if radioButton3.Checked then
       cells[2, 12] := 'Topic'
     else
@@ -954,28 +1045,113 @@ begin
     else
       cells[0, 12] := '1';
 
-    cells[1, 13] := 'Download Attempts';
+    cells[1, 13] := 'Download attempts';
     cells[2, 13] := DownloadAttemptsEdit.Text;
     if DownloadAttemptsEdit.value = params.DownloadAttempts then
       cells[0, 13] := '0'
     else
       cells[0, 13] := '1';
 
-    cells[1, 14] := 'Download Timeout';
-    cells[2, 14] := DowloadTimeoutEdit.Text;
-    if DowloadTimeoutEdit.value = params.DownloadTimeout then
+    cells[1, 14] := 'Download timeout';
+    cells[2, 14] := DownloadTimeoutEdit.Text;
+    if DownloadTimeoutEdit.value = params.DownloadTimeout then
       cells[0, 14] := '0'
     else
       cells[0, 14] := '1';
 
+    cells[1, 15] := 'Exclude IP addresses';
+    cells[2, 15] := ListIPs(ExcludeListBox.Items);
+    if ExcludeListBox.Items.Equals(params.ExcludeIPs) then
+      cells[0, 15] := '0'
+    else
+      cells[0, 15] := '1';
+
+    cells[1, 16] := 'Include IP addresses';
+    cells[2, 16] := ListIPs(IncludeListBox.Items);
+    if IncludeListBox.Items.Equals(params.IncludeIPs) then
+      cells[0, 16] := '0'
+    else
+      cells[0, 16] := '1';
   end;
   Notebook1.PageIndex := 4;
-  CheckBox2.SetFocus;
+  AllOptionsCheckBox.SetFocus;
+end;
+
+procedure TMainForm.Page2BeforeShow(ASender: TObject; ANewPage: TPage;
+  ANewIndex: Integer);
+begin
+  updategrid := DeviceGrid;
+end;
+
+procedure TMainForm.Page4BeforeShow(ASender: TObject; ANewPage: TPage;
+  ANewIndex: Integer);
+begin
+  updategrid := ResGrid;
+end;
+
+procedure TMainForm.Page5BeforeShow(ASender: TObject; ANewPage: TPage;
+  ANewIndex: Integer);
+begin
+  updategrid := OptionsGrid;
+end;
+
+procedure TMainForm.PopupMenu1Close(Sender: TObject);
+begin
+  PopupMenu1.tag := 0;
+end;
+
+procedure TMainForm.PopupMenu1Popup(Sender: TObject);
+begin
+  PopupMenu1.tag := 1;
 end;
 
 procedure TMainForm.QuitButtonClick(Sender: TObject);
 begin
   close;
+end;
+
+procedure TMainForm.ResetButtonClick(Sender: TObject);
+var
+  i: integer;
+begin
+  for i := 1 to OptionsGrid.Rowcount-1 do begin
+    if OptionsGrid.cells[0, i] = '0' then
+       continue;
+    case i of
+       1: params.Subnet := DEFAULT_SUBNET;
+       2: params.SubnetBits := DEFAULT_SUBNET_BITS;
+       3: params.ScanAllIP := DEFAULT_SCAN_ALL_IP;
+       4: params.FirstiP := DEFAULT_FIRST_IP;
+       5: params.LastIP := DEFAULT_LAST_IP;
+       6: params.ScanAttempts := DEFAULT_SCAN_ATTEMPTS;
+       7: params.ScanTimeout := DEFAULT_SCAN_TIMEOUT;
+       8: params.Directory := DEFAULT_BACK_DIRECTORY;
+       9: params.Extension := DEFAULT_EXTENSION;
+      10: params.Dateformat := DEFAUT_DATE_FORMAT;
+      11: params.FilenameFormat := DEFAULT_FILENAME_FORMAT;
+      12: params.DeviceName := DEFAULT_DEVICE_NAME;
+      13: params.DownloadAttempts := DEFAULT_DOWNLOAD_ATTEMPTS;
+      14: params.DownloadTimeout := DEFAULT_DOWNLOAD_TIMEOUT;
+      15: params.ExcludeIPsAction := ilaErase;
+      16: params.IncludeIPsAction := ilaErase;
+     end;
+  end;
+  close;
+end;
+
+procedure TMainForm.ResGridDblClick(Sender: TObject);
+begin
+  CopyResGridToClipbrd(#9);
+end;
+
+procedure TMainForm.ResGridMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (PopupMenu1.tag = 0) and (Button = mbRight) then begin
+    popx := left + x;
+    popy := top + y;
+    PopupMenu1.PopUp(popx, popy);
+  end;
 end;
 
 procedure TMainForm.SaveButtonClick(Sender: TObject);
@@ -1005,7 +1181,9 @@ begin
           else
             params.devicename := 1;
       13: params.DownloadAttempts := DownloadAttemptsEdit.value;
-      14: params.DownloadTimeout := DowloadTimeoutEdit.value;
+      14: params.DownloadTimeout := DownloadTimeoutEdit.value;
+      15: begin params.ExcludeIPsAction := ilaSave; params.ExcludeIPs := ExcludeListBox.Items; end;
+      16: begin params.IncludeIPsAction := ilaSave; params.IncludeIPs := IncludeListBox.Items; end;
      end;
   end;
   close;
@@ -1039,41 +1217,6 @@ begin
     FirstIPEdit.text := lfip.ToString;
     LastIPEdit.Text := llip.ToString;
   end
-end;
-
-function TMainForm.SecondsToStr(value: integer): string;
-begin
-  if value < 120 then
-    result := Format(' %d seconds', [value])
-  else
-    result := Format(' %d minutes %s', [value div 60, SecondsToStr(value mod 60)]);
-end;
-
-procedure TMainForm.FixupAllIpHint;
-var
-  mask: TIPv4;
-  ttime: integer;
-begin
-  mask := not SubnetMask(SubnetBitsEdit.value);
-  ttime := (mask.value - 2) * ScanAttemptsEdit.value * ScanTimeoutEdit.value;
-  //FullRangeRadioButton.Hint := Format('Could take up to %d seconds', [ttime]);
-  FullRangeRadioButton.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
-end;
-
-procedure TMainForm.FixupIpRangeHint;
-var
-  lfip, llip: TIpv4;
-  ttime: integer;
-begin
-  if TryStrToIPv4(FirstIpEdit.text, lfip)
-  and TryStrToIPv4(LastIpEdit.text, llip) then begin
-    ttime := (llip.value - lfip.value + 1) *  ScanAttemptsEdit.value * ScanTimeoutEdit.value;
-    //RadioButton8.Hint := Format('Could take up to %d seconds', [ttime]);
-    RadioButton8.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
-    label23.Hint := RadioButton8.Hint;
-    FirstIPEdit.Hint := RadioButton8.Hint;
-    LastIPEdit.Hint := RadioButton8.Hint;
-  end;
 end;
 
 procedure TMainForm.UpdateCheckCount;
