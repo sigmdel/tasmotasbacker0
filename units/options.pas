@@ -2,8 +2,9 @@ unit options;
 
 {$mode objfpc}{$H+}
 
+// set these defines in the project options
 {-- $DEFINE INCLUDE_MQTT_OPTIONS}
-{$DEFINE INCLUDE_HTTP_OPTIONS}
+{-- $DEFINE INCLUDE_HTTP_OPTIONS}
 
 interface
 

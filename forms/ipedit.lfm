@@ -8,6 +8,8 @@ object IpEditForm: TIpEditForm
   ClientHeight = 94
   ClientWidth = 312
   FormStyle = fsStayOnTop
+  KeyPreview = True
+  OnKeyDown = FormKeyDown
   OnShow = FormShow
   Position = poMainFormCenter
   ShowInTaskBar = stNever

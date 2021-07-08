@@ -61,7 +61,8 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dUseCThreads"/>
+            <CustomOptions Value="-dUseCThreads
+-dINCLUDE_HTTP_OPTIONS"/>
             <OtherDefines Count="1">
               <Define0 Value="UseCThreads"/>
             </OtherDefines>
@@ -97,9 +98,11 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dUseCThreads"/>
-            <OtherDefines Count="1">
+            <CustomOptions Value="-dUseCThreads
+-dINCLUDE_HTTP_OPTIONS"/>
+            <OtherDefines Count="2">
               <Define0 Value="UseCThreads"/>
+              <Define1 Value="INCLUDE_HTTP_OPTIONS"/>
             </OtherDefines>
           </Other>
         </CompilerOptions>
@@ -125,7 +128,7 @@
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="forms/main.pas"/>
+        <Filename Value="forms/main0.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
@@ -181,7 +184,12 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dUseCThreads"/>
+      <CustomOptions Value="-dUseCThreads
+-dINCLUDE_HTTP_OPTIONS"/>
+      <OtherDefines Count="2">
+        <Define0 Value="UseCThreads"/>
+        <Define1 Value="INCLUDE_HTTP_OPTIONS"/>
+      </OtherDefines>
     </Other>
   </CompilerOptions>
   <Debugging>

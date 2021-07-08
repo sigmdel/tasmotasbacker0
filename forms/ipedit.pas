@@ -17,6 +17,7 @@ type
     AddressEdit: TEdit;
     Label1: TLabel;
     procedure Button1Click(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
   private
 
@@ -31,7 +32,6 @@ implementation
 uses ipv4;
 
 { TIpEditForm }
-
 
 procedure TIpEditForm.FormShow(Sender: TObject);
 begin
@@ -50,6 +50,13 @@ begin
     AddressEdit.SetFocus;
     modalResult := mrCancel;
   end;
+end;
+
+procedure TIpEditForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = $D then
+    Button1Click(nil);
 end;
 
 end.
