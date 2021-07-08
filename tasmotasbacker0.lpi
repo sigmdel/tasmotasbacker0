@@ -98,8 +98,7 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dUseCThreads
--dINCLUDE_HTTP_OPTIONS"/>
+            <CustomOptions Value="-dINCLUDE_HTTP_OPTIONS"/>
             <OtherDefines Count="2">
               <Define0 Value="UseCThreads"/>
               <Define1 Value="INCLUDE_HTTP_OPTIONS"/>
