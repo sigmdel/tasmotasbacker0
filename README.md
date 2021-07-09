@@ -2,7 +2,7 @@
 
 **Version 0.1.1** (July 8, 2021)
 
-A utility that can back up the configuration of all Tasmota devices on a network. Contrary to [tasmotasbacker](https://github.com/sigmdel/tasmotasbacker), it does not use an MQTT broker to obtain the IP addresses of the Tasmota devices. 
+A utility that can back up the configuration of all Tasmota devices on a network. Contrary to [tasmotasbacker](https://github.com/sigmdel/tasmotasbacker), it does not use an MQTT broker to obtain the IP addresses of the Tasmota devices nor does it require any external libraries.
 
 ![screenshot](images/backups0_capture.jpg)
 
@@ -45,9 +45,9 @@ The project was built with Lazarus 2.0.12 (Free Pascall 3.2.0) on a Mint 20.1 sy
 
 ## 4. Installation and Releases
 
-The current Linux release, `tasmotasbacker0.gz`, contains a compressed `x86_64-linux` binary on Mint 20.1 . Extract the binary `tasmotasbacker0` to a directory in the search path such as `~./local/bin/tasmotasbacker0/`.  Copy the image `images/tasmotabacker.png` into the same directory. The `installation` directory contains a `tamostasbacker0.desktop` file along with rudimentary instructions on how to install the utility in a Mint 20.1 Mate system. Presumably, installation in other Linux distributions would be more or less the same.
+The file `tasmotasbacker0-r****.gz`, contains a compressed `x86_64-linux` binary which was tested on Mint 20.1 . Extract the binary `tasmotasbacker0` to a directory in the search path such as `~./local/bin/tasmotasbacker0/`.  Copy the image `images/tasmotabacker.png` into the same directory. The `installation` directory contains a `tamostasbacker0.desktop` file along with rudimentary instructions on how to install the utility in a Mint 20.1 Mate system. Presumably, installation in other Linux distributions would be more or less the same.
 
-Details about installation of an application in Windows are unfortunately not provided. A binary xxxxx is provided in the `tasmotasbacker0.zip` archive.
+Details about installation of an application in Windows are unfortunately not provided. A `x86_64-win64` binary is provided in the `tasmotasbacker0.zip` archive.
 
 
 ## 5. Program Options
@@ -79,10 +79,34 @@ Configuration download timing
 
 4. `Download timeout` -  the maximum time to wait for a reply. Specified in seconds, the minimum is 1 second.
 
-The default values usually work well on a system with a 4th generation i7 CPU running Linux Mint 20.1. However the timeout had to be increased to 5 or even 6 seconds (5000-6000 ms) on a system with a 4th generation i5 running Windows 10 connected to the same local area network. 
+The default values usually work well on a system with a 4th generation i7 CPU running Linux Mint 20.1. However both timeout values had to be increased to 4 or even 6 seconds on a system with a 4th generation i5 running Windows 10 connected to the same local area network. 
 
-Mileage will vary as the per the old chestnut. To help in fixing reasonable values, there are four directives in the `main0.pas` unit (named `DEBUG_HTTP_REQUEST`, `DEBUG_BACKUP`, `DEBUG_HTTP_SCAN` and `DEBUG_TIME_HTTP`) that will log some timing information if defined. Those using a binary release, can only adjust the values in the application and save them in the `Backup parameters` sheet. 
+Mileage will vary as the per the old chestnut. To help find reasonable values, there are four directives in the `main0.pas` unit (named `DEBUG_HTTP_REQUEST`, `DEBUG_BACKUP`, `DEBUG_HTTP_SCAN` and `DEBUG_TIME_HTTP`) that can be defined to log some timing information. To see the time log in Linux, start the application from a terminal. In Windows, the log is saved to a file named `tasmotasbacker0.log` in the same directory as the executable when the latter is exited. Here is part of the timing log when `DEBUG_HTTP_REQUEST` is defined.
 
+```
+              time    diff   message
+11:56:34.132856187       0   HttpRequest(url: http://192.168.1.100/cm?cmnd=hostname, maxtries: 2, timeout: 4000)
+11:56:34.132856218      31     request returns after 1 tries with code = 200, data = <!DOCTYPE html>?<html>?<head>? <meta http-equiv="Content-Type" c
+11:56:34.132856234       0   HttpRequest(url: http://192.168.1.101/cm?cmnd=hostname, maxtries: 2, timeout: 4000)
+11:56:34.132856500     266     Exception class EHTTPClient, message Unexpected response status code: 404, code 404, try 1
+11:56:34.132856500       0     request returns after 1 tries with code = 404, data = 
+11:56:34.132856515       0   HttpRequest(url: http://192.168.1.102/cm?cmnd=hostname, maxtries: 2, timeout: 4000)
+11:56:35.132856765     250     request returns after 1 tries with code = 200, data = {"Hostname":"entree"}
+11:56:35.132856765       0   HttpRequest(url: http://192.168.1.102/cm?cmnd=topic, maxtries: 2, timeout: 4000)
+11:56:35.132856890     125     request returns after 1 tries with code = 200, data = {"Topic":"entree"}
+11:56:35.132856921       0   HttpRequest(url: http://192.168.1.103/cm?cmnd=hostname, maxtries: 2, timeout: 4000)
+11:56:35.132857375     454     request returns after 1 tries with code = 200, data = {"Hostname":"lampe-biblio"}
+11:56:35.132857375       0   HttpRequest(url: http://192.168.0.103/cm?cmnd=topic, maxtries: 2, timeout: 4000)
+11:56:35.132857500     125     request returns after 1 tries with code = 200, data = {"Topic":"lampe-biblio"}
+...
+11:56:35.132857531       0   HttpRequest(url: http://192.168.1.155/cm?cmnd=hostname, maxtries: 2, timeout: 4000)
+11:56:39.132861546    4015     Exception class ESocketError, message Connection to 192.168.1.155:80 timed out., code 5, try 1
+11:56:39.132861546       0     http request attemp 1 failed with code: 5
+11:56:47.132869578    8032     Exception class ESocketError, message Connection to 192.168.1.155:80 timed out., code 5, try 2
+11:56:47.132869578       0     http request attemp 2 failed with code: 5
+...
+```
+The fractional part of the seconds entry in the time stamp is the system tick count. The diff column shows the number of tick counts between two entries in the log which is nominally the number of elapsed milliseconds between them. Since this tick counter is reset to 0 for each new HTTP request it is easy to see the time taken by the device to reply.  
 
 ## 8. Similar Projects
 
@@ -90,14 +114,14 @@ A version of this project that used an MQTT broker to find Tasmota devices is av
 
 - [tasmotasbacker](https://github.com/sigmdel/tasmotasbacker) by sigmdel.
 
-It does require the `mosquitto` library which may be difficult to install on some systems. The scan to find devices can be considerable shorter when sing an MQTT broker. On the other hand, Tasmota devices that are not configured to use an MQTT broker or that have a broken MQTT configuration will not be found.
+It does require the `mosquitto` library which may be difficult to install on some systems. The scan to find devices can be considerable shorter when ising an MQTT broker. On the other hand, Tasmota devices that are not configured to use an MQTT broker or that have a broken MQTT configuration will not be found.
 
 There are two Python scripts on GitHub that do essentially the same thing:
 
 - [tas-backup](https://github.com/dragonflyuk) by dragonflyuk,
 - [Tasmota-Config-Backup](https://github.com/rt400/Tasmota-Config-Backup/blob/master/tasmota_backup.py) by Yuval (rt400).
 
-There is also a much more ambitious PHP project:
+There is also a much more ambitious PHP/Sqlite project:
 
 - [TasmoBackupV1](https://github.com/danmed/TasmoBackupV1) by danmed.
 
