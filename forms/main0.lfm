@@ -267,7 +267,7 @@ object MainForm: TMainForm
         BorderSpacing.Bottom = 6
         ItemHeight = 0
         OnDblClick = ExcludeListBoxDblClick
-        ScrollWidth = 118
+        ScrollWidth = 1
         TabOrder = 9
         TopIndex = -1
       end
@@ -283,7 +283,7 @@ object MainForm: TMainForm
         ExtendedSelect = False
         ItemHeight = 0
         OnDblClick = IncludeListBoxDblClick
-        ScrollWidth = 118
+        ScrollWidth = 1
         TabOrder = 10
         TopIndex = -1
       end
