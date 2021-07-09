@@ -15,7 +15,7 @@ object MainForm: TMainForm
     Height = 298
     Top = 0
     Width = 421
-    PageIndex = 3
+    PageIndex = 0
     Align = alClient
     OnResize = FormResize
     TabOrder = 0
@@ -258,6 +258,7 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 14
         Height = 114
+        Hint = 'Double click to edit'
         Top = 147
         Width = 120
         Anchors = [akTop, akLeft, akBottom]
@@ -274,6 +275,7 @@ object MainForm: TMainForm
         AnchorSideBottom.Side = asrBottom
         Left = 152
         Height = 114
+        Hint = 'Double click to edit'
         Top = 147
         Width = 120
         Anchors = [akTop, akLeft, akBottom]
