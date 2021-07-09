@@ -45,9 +45,9 @@ The project was built with Lazarus 2.0.12 (Free Pascall 3.2.0) on a Mint 20.1 sy
 
 ## 4. Installation and Releases
 
-The file `tasmotasbacker0-r****.gz`, contains a compressed `x86_64-linux` binary which was tested on Mint 20.1 . Extract the binary `tasmotasbacker0` to a directory in the search path such as `~./local/bin/tasmotasbacker0/`.  Copy the image `images/tasmotabacker.png` into the same directory. The `installation` directory contains a `tamostasbacker0.desktop` file along with rudimentary instructions on how to install the utility in a Mint 20.1 Mate system. Presumably, installation in other Linux distributions would be more or less the same.
+The file `tasmotasbacker0-r****.gz`, contains a compressed `x86_64-linux` binary which was tested on Mint 20.1 . Extract the binary `tasmotasbacker0` to a directory in the search path such as `~./local/bin/`.  Copy the image `images/tasmotabacker.png` into the same directory. The `installation` directory contains a `tamostasbacker0.desktop` file along with rudimentary instructions on how to install the utility in a Mint 20.1 Mate system. Presumably, installation in other Linux distributions would be more or less the same.
 
-Details about installation of an application in Windows are unfortunately not provided. A `x86_64-win64` binary is provided in the `tasmotasbacker0.zip` archive.
+Details about installation of an application in Windows are unfortunately not provided. A `x86_64-win64` binary is provided in the `tasmotasbacker0-r****.zip` archive.
 
 
 ## 5. Program Options
@@ -65,7 +65,7 @@ Information on how to use the program can be found on this site: [DIY Tasmota Ba
 
 ## 7. Timing
 
-Because the HTTP requests sent by the utility are blocking, timeouts have to be specified otherwise the program would hang. There are four options that can be tweaked:
+Because the HTTP requests sent by the utility are blocking, timeouts have to be specified otherwise the program could hang. There are four options that can be tweaked:
 
 IP Scanning timing
 
