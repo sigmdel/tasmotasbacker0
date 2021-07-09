@@ -35,6 +35,7 @@ type
     procedure actEditExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure IpListBoxClick(Sender: TObject);
+    procedure IpListBoxDblClick(Sender: TObject);
   private
     lastIp: string;
     procedure AddIp(const ips: string);
@@ -127,7 +128,10 @@ begin
       with TIpEditForm.Create(self) do try
         AddressEdit.Text := Items[ItemIndex];
         if (ShowModal = mrOk) then begin
-          AddIp(AddressEdit.Text);
+          if AddressEdit.Text <> Items[ItemIndex] then begin
+            Items.Delete(ItemIndex);
+            AddIp(AddressEdit.Text);
+          end;
           lastip := AddressEdit.Text;
         end;
       finally
@@ -149,6 +153,10 @@ begin
   ListChange;
 end;
 
+procedure TForm1.IpListBoxDblClick(Sender: TObject);
+begin
+  actEditExecute(nil);
+end;
 
 procedure TForm1.actAddExecute(Sender: TObject);
 begin
