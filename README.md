@@ -86,6 +86,12 @@ Mileage will vary as the per the old chestnut. To help in fixing reasonable valu
 
 ## 8. Similar Projects
 
+A version of this project that used an MQTT broker to find Tasmota devices is available.
+
+- [tasmotasbacker](https://github.com/sigmdel/tasmotasbacker) by sigmdel.
+
+It does require the `mosquitto` library which may be difficult to install on some systems. The scan to find devices can be considerable shorter when sing an MQTT broker. On the other hand, Tasmota devices that are not configured to use an MQTT broker or that have a broken MQTT configuration will not be found.
+
 There are two Python scripts on GitHub that do essentially the same thing:
 
 - [tas-backup](https://github.com/dragonflyuk) by dragonflyuk,
