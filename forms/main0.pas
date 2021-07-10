@@ -144,6 +144,7 @@ type
     updategrid: TObject;
     newdev: boolean;
     fip, lip: TIPv4;
+    function MaxRequestTime: single;
     procedure FixupAllIpHint;
     procedure FixupIpRangeHint;
     function GetExtension: string;
@@ -160,7 +161,7 @@ var
 implementation
 
 uses
-  clipbrd, fileinfo, options, ssockets, fphttpclient, iplistEdit;
+  clipbrd, fileinfo, options, ssockets, fphttpclient, iplistEdit, math;
 
 {$R *.lfm}
 
@@ -520,14 +521,45 @@ begin
   FixupIpRangeHint;
 end;
 
+(*
+ let w be the timeout, then at each try the timeout value will be
+
+ try   timeout
+  1       w     2^(1-1) w
+  2      2w     2^(2-1) w
+  3      4w     2^(3-1) w
+  4      8w     2^(4-1) w
+  ...
+  i             2^(i-1) w
+  ...
+  n             2^(n-1) w
+
+So want to calculate total wait for a request after n tries is
+  w *sum{i=1 to n} 2^(i-1)
+
+But sum{i=1 to n} 2^(i-1) = sum{i=0 to n-1} 2^i
+
+Now the sum{i=0 to k} 2^i is 2^(k+1) - 1 so
+   sum{i=0 to n-1} 2^i = 2^(n-1+1) - 1 = 2^n - 1
+
+So the wait time for one HTTP request done n tries is w *(2^n - 1)
+*)
+
+function TMainForm.MaxRequestTime: single;
+begin
+  result := intpower(2, ScanAttemptsEdit.value) - 1;
+  result := result*ScanTimeoutEdit.value;
+end;
+
 procedure TMainForm.FixupAllIpHint;
 var
   mask: TIPv4;
   ttime: integer;
+  nips: integer;
 begin
   mask := not SubnetMask(SubnetBitsEdit.value);
-  ttime := (mask.value - 2) * ScanAttemptsEdit.value * ScanTimeoutEdit.value;
-  //FullRangeRadioButton.Hint := Format('Could take up to %d seconds', [ttime]);
+  nips := mask.value - 2 - ExcludeListBox.Count*ord(ExcludeCheckBox.Checked);
+  ttime := round( nips * MaxRequestTime ) ;
   FullRangeRadioButton.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
 end;
 
@@ -535,11 +567,14 @@ procedure TMainForm.FixupIpRangeHint;
 var
   lfip, llip: TIpv4;
   ttime: integer;
+  nips: integer;
 begin
   if TryStrToIPv4(FirstIpEdit.text, lfip)
   and TryStrToIPv4(LastIpEdit.text, llip) then begin
-    ttime := (llip.value - lfip.value + 1) *  ScanAttemptsEdit.value * ScanTimeoutEdit.value;
-    //RadioButton8.Hint := Format('Could take up to %d seconds', [ttime]);
+    nips := llip.value - lfip.value + 1
+      - ExcludeListBox.Count*ord(ExcludeCheckBox.Checked)
+      + IncludeListBox.Count*ord(IncludeCheckBox.Checked);
+    ttime := round( nips * MaxRequestTime ) ;
     RadioButton8.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
     label23.Hint := RadioButton8.Hint;
     FirstIPEdit.Hint := RadioButton8.Hint;

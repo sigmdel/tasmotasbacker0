@@ -10,6 +10,7 @@ object MainForm: TMainForm
   ParentBiDiMode = False
   Position = poScreenCenter
   ShowHint = True
+  LCLVersion = '2.0.12.0'
   object Notebook1: TNotebook
     Left = 0
     Height = 298
@@ -298,6 +299,7 @@ object MainForm: TMainForm
         BorderSpacing.Top = 6
         Caption = 'Exclude'
         Color = clDefault
+        OnChange = ScanAttemptsEditChange
         ParentColor = False
         TabOrder = 11
       end
@@ -311,6 +313,7 @@ object MainForm: TMainForm
         BorderSpacing.Left = 12
         Caption = 'Include'
         Color = clDefault
+        OnChange = ScanAttemptsEditChange
         ParentColor = False
         TabOrder = 12
       end
