@@ -948,86 +948,86 @@ begin
     cells[2, 5] := LastIPEdit.Text;
     setCb(5, params.LastIP);
 
-
-    cells[1, 6] := 'Scan connect attempts';
-    cells[2, 6] := ScanAttemptsEdit.Text;
-    if ScanAttemptsEdit.value = params.ScanAttempts then
+    cells[1, 6] := 'Exclude IP addresses';
+    cells[2, 6] := ListIPs(ExcludeListBox.Items);
+    if ExcludeListBox.Items.Equals(params.ExcludeIPs) then
       cells[0, 6] := '0'
     else
       cells[0, 6] := '1';
 
-    cells[1, 7] := 'Scan connect timeout';
-    cells[2, 7] := ScanTimeoutEdit.Text;
-    if ScanTimeOutEdit.value = params.ScanTimeout then
+    cells[1, 7] := 'Include IP addresses';
+    cells[2, 7] := ListIPs(IncludeListBox.Items);
+    if IncludeListBox.Items.Equals(params.IncludeIPs) then
       cells[0, 7] := '0'
     else
       cells[0, 7] := '1';
 
-    cells[1, 8] := 'Backup directory';
-    cells[2, 8] := DirectoryEdit.Directory;
-    setCb(8, params.directory);
+    cells[1, 8] := 'Scan connect attempts';
+    cells[2, 8] := ScanAttemptsEdit.Text;
+    if ScanAttemptsEdit.value = params.ScanAttempts then
+      cells[0, 8] := '0'
+    else
+      cells[0, 8] := '1';
 
-    cells[1, 9] := 'Backup extension';
-    cells[2, 9] := ExtensionEdit.Text;
-    setCb(9, params.extension);
+    cells[1, 9] := 'Scan connect timeout';
+    cells[2, 9] := ScanTimeoutEdit.Text;
+    if ScanTimeOutEdit.value = params.ScanTimeout then
+      cells[0, 9] := '0'
+    else
+      cells[0, 9] := '1';
 
-    cells[1, 10] := 'Date format';
-    cells[2, 10] := DateformatEdit.Text;
+    cells[1, 10] := 'Backup directory';
+    cells[2, 10] := DirectoryEdit.Directory;
+    setCb(10, params.directory);
+
+    cells[1, 11] := 'Backup extension';
+    cells[2, 11] := ExtensionEdit.Text;
+    setCb(11, params.extension);
+
+    cells[1, 12] := 'Date format';
+    cells[2, 12] := DateformatEdit.Text;
     if DateformatEdit.ItemIndex = params.dateformat then
-      cells[0, 10] := '0'
-    else
-      cells[0, 10] := '1';
-
-    cells[1, 11] := 'Filename format';
-    if radioButton1.Checked then
-      cells[2, 11] := ChangeFileExt(radiobutton1.caption, '')
-    else
-      cells[2, 11] := ChangeFileExt(radiobutton2.caption, '');
-    if (radioButton1.checked and (params.filenameformat = 0))
-    or (radioButton2.checked and (params.filenameformat = 1)) then
-      cells[0, 11] := '0'
-    else
-      cells[0, 11] := '1';
-
-    cells[1, 12] := 'Device name';
-    if radioButton3.Checked then
-      cells[2, 12] := 'Topic'
-    else
-      cells[2, 12] := 'Hostname';
-    if (radioButton3.checked and (params.devicename = 0))
-    or (radioButton4.checked and (params.devicename = 1)) then
       cells[0, 12] := '0'
     else
       cells[0, 12] := '1';
 
-    cells[1, 13] := 'Download attempts';
-    cells[2, 13] := DownloadAttemptsEdit.Text;
-    if DownloadAttemptsEdit.value = params.DownloadAttempts then
+    cells[1, 13] := 'Filename format';
+    if radioButton1.Checked then
+      cells[2, 13] := ChangeFileExt(radiobutton1.caption, '')
+    else
+      cells[2, 13] := ChangeFileExt(radiobutton2.caption, '');
+    if (radioButton1.checked and (params.filenameformat = 0))
+    or (radioButton2.checked and (params.filenameformat = 1)) then
       cells[0, 13] := '0'
     else
       cells[0, 13] := '1';
 
-    cells[1, 14] := 'Download timeout';
-    cells[2, 14] := DownloadTimeoutEdit.Text;
-    if DownloadTimeoutEdit.value = params.DownloadTimeout then
+    cells[1, 14] := 'Device name';
+    if radioButton3.Checked then
+      cells[2, 14] := 'Topic'
+    else
+      cells[2, 14] := 'Hostname';
+    if (radioButton3.checked and (params.devicename = 0))
+    or (radioButton4.checked and (params.devicename = 1)) then
       cells[0, 14] := '0'
     else
       cells[0, 14] := '1';
 
-    cells[1, 15] := 'Exclude IP addresses';
-    cells[2, 15] := ListIPs(ExcludeListBox.Items);
-    if ExcludeListBox.Items.Equals(params.ExcludeIPs) then
+    cells[1, 15] := 'Download attempts';
+    cells[2, 15] := DownloadAttemptsEdit.Text;
+    if DownloadAttemptsEdit.value = params.DownloadAttempts then
       cells[0, 15] := '0'
     else
       cells[0, 15] := '1';
 
-    cells[1, 16] := 'Include IP addresses';
-    cells[2, 16] := ListIPs(IncludeListBox.Items);
-    if IncludeListBox.Items.Equals(params.IncludeIPs) then
+    cells[1, 16] := 'Download timeout';
+    cells[2, 16] := DownloadTimeoutEdit.Text;
+    if DownloadTimeoutEdit.value = params.DownloadTimeout then
       cells[0, 16] := '0'
     else
       cells[0, 16] := '1';
   end;
+
   Notebook1.PageIndex := 4;
   AllOptionsCheckBox.SetFocus;
 end;
@@ -1078,17 +1078,17 @@ begin
        3: params.ScanAllIP := DEFAULT_SCAN_ALL_IP;
        4: params.FirstiP := DEFAULT_FIRST_IP;
        5: params.LastIP := DEFAULT_LAST_IP;
-       6: params.ScanAttempts := DEFAULT_SCAN_ATTEMPTS;
-       7: params.ScanTimeout := DEFAULT_SCAN_TIMEOUT;
-       8: params.Directory := DEFAULT_BACK_DIRECTORY;
-       9: params.Extension := DEFAULT_EXTENSION;
-      10: params.Dateformat := DEFAUT_DATE_FORMAT;
-      11: params.FilenameFormat := DEFAULT_FILENAME_FORMAT;
-      12: params.DeviceName := DEFAULT_DEVICE_NAME;
-      13: params.DownloadAttempts := DEFAULT_DOWNLOAD_ATTEMPTS;
-      14: params.DownloadTimeout := DEFAULT_DOWNLOAD_TIMEOUT;
-      15: params.ExcludeIPsAction := ilaErase;
-      16: params.IncludeIPsAction := ilaErase;
+       6: params.ExcludeIPsAction := ilaErase;
+       7: params.IncludeIPsAction := ilaErase;
+       8: params.ScanAttempts := DEFAULT_SCAN_ATTEMPTS;
+       9: params.ScanTimeout := DEFAULT_SCAN_TIMEOUT;
+      10: params.Directory := DEFAULT_BACK_DIRECTORY;
+      11: params.Extension := DEFAULT_EXTENSION;
+      12: params.Dateformat := DEFAUT_DATE_FORMAT;
+      13: params.FilenameFormat := DEFAULT_FILENAME_FORMAT;
+      14: params.DeviceName := DEFAULT_DEVICE_NAME;
+      15: params.DownloadAttempts := DEFAULT_DOWNLOAD_ATTEMPTS;
+      16: params.DownloadTimeout := DEFAULT_DOWNLOAD_TIMEOUT;
      end;
   end;
   close;
@@ -1122,23 +1122,23 @@ begin
        3: params.ScanAllIP := FullRangeRadioButton.Checked;
        4: params.FirstIP := OptionsGrid.cells[2, i];
        5: params.LastIP := OptionsGrid.cells[2, i];
-       6: params.ScanAttempts := ScanAttemptsEdit.value;
-       7: params.ScanTimeout := ScanTimeoutEdit.value;
-       8: params.directory := OptionsGrid.cells[2, i];
-       9: params.extension := OptionsGrid.cells[2, i];
-      10: params.dateformat := DateFormatEdit.ItemIndex;
-      11: if RadioButton1.Checked then
+       6: begin params.ExcludeIPsAction := ilaSave; params.ExcludeIPs := ExcludeListBox.Items; end;
+       7: begin params.IncludeIPsAction := ilaSave; params.IncludeIPs := IncludeListBox.Items; end;
+       8: params.ScanAttempts := ScanAttemptsEdit.value;
+       9: params.ScanTimeout := ScanTimeoutEdit.value;
+      10: params.directory := OptionsGrid.cells[2, i];
+      11: params.extension := OptionsGrid.cells[2, i];
+      12: params.dateformat := DateFormatEdit.ItemIndex;
+      13: if RadioButton1.Checked then
             params.filenameformat := 0
           else
             params.filenameformat := 1;
-      12: if RadioButton3.Checked then
+      14: if RadioButton3.Checked then
             params.devicename := 0
           else
             params.devicename := 1;
-      13: params.DownloadAttempts := DownloadAttemptsEdit.value;
-      14: params.DownloadTimeout := DownloadTimeoutEdit.value;
-      15: begin params.ExcludeIPsAction := ilaSave; params.ExcludeIPs := ExcludeListBox.Items; end;
-      16: begin params.IncludeIPsAction := ilaSave; params.IncludeIPs := IncludeListBox.Items; end;
+      15: params.DownloadAttempts := DownloadAttemptsEdit.value;
+      16: params.DownloadTimeout := DownloadTimeoutEdit.value;
      end;
   end;
   close;
@@ -1184,7 +1184,6 @@ begin
     if DeviceGrid.cells[0, i] = '1' then inc(checkcount);
   label11.Caption := Format('%d devices checked / %d total', [checkcount, DeviceGrid.RowCount-1]);
 end;
-
 
 {$IFDEF MSWINDOWS}{$IFDEF DO_LOG}
 finalization
