@@ -161,7 +161,7 @@ begin
   result.value := not ip.value;
 end;
 
-
+{ older slower version
 function StrToIPv4(const S: string): TIPv4;
 var
   ss: string;  // sub string to hold each quad value
@@ -198,6 +198,52 @@ begin
   until (p > n) or (r < 0);
   if (p <= n) or (r <> -1) then
     IPv4ErrorFmt(SInvalidIPv4Value, S);
+end;
+}
+
+{ Newer faster version based on
+https://codes-sources.commentcamarche.net/source/62056-ipv4-ipv6-vers-chaine-et-chaine-vers-ipv4-ipv6
+by f0xi on CodeS-SourceS (2008-09-15)
+}
+function StrToIPv4(const S: string): TIPv4;
+var
+  L: integer;  // length of S
+  i: integer;  // char index in S
+  v: integer;  // value of single quad
+  r: integer;  // quad index and error flag (if r < 0)
+begin
+  result.value := 0;
+  L := Length(S);
+  r := 3;
+  for i := 1 to L do begin
+    if S[i] = '.' then begin
+      // move to next quad
+      dec(r);
+      if r < 0 then
+        break;    // too many '.'
+    end
+    else begin
+      v := ord(S[i]) - ord('0'); // assume an ascii digit has been found, convert to  binary
+      if (v < 0) or (v > 9) then begin
+        // not an ascii digit
+        r := -2;
+        break;
+      end;
+      v := result.Quad[r]*10 + v;
+      if v > 255 then begin
+        r := -3;
+        break;
+      end;
+      result.Quad[r] := V
+    end;
+  end;
+  // possible r values:
+  //   -3 - the quad value > 255
+  //   -2 - char in in ascii digit range
+  //   -1 - too many '.'
+  //    0 - could be ok as long as not finishing with empty last quad as in  '192.168.8.'
+  if (r <> 0) or (S[L] = '.') then
+    IPv4ErrorFmt(SInvalidIPv4Value, S);        ;
 end;
 
 function TryStrToIPv4(const S: string; out ip: TIPv4): boolean;
