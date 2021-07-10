@@ -1,6 +1,6 @@
 # tasmotasbacker0 : Tasmotas Backer 0
 
-**Version 0.1.1** (July 8, 2021)
+**Version 0.1.2** (July 10, 2021)
 
 A utility that can back up the configuration of all Tasmota devices on a network. Contrary to [tasmotasbacker](https://github.com/sigmdel/tasmotasbacker), it does not use an MQTT broker to obtain the IP addresses of the Tasmota devices nor does it require any external libraries.
 
