@@ -94,8 +94,10 @@ type
     RadioButton2: TRadioButton;
     procedure ApplicationProperties1Idle(Sender: TObject; var Done: Boolean);
     procedure Back2ButtonClick(Sender: TObject);
+    procedure ExcludeCheckBoxChange(Sender: TObject);
     procedure FirstIPEditEditingDone(Sender: TObject);
     procedure ExcludeListBoxDblClick(Sender: TObject);
+    procedure IncludeCheckBoxChange(Sender: TObject);
     procedure IncludeListBoxDblClick(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
@@ -144,7 +146,8 @@ type
     updategrid: TObject;
     newdev: boolean;
     fip, lip: TIPv4;
-    function MaxRequestTime: single;
+    maxRequestTimeProp: single;
+    procedure CalcMaxRequestTime;
     procedure FixupAllIpHint;
     procedure FixupIpRangeHint;
     function GetExtension: string;
@@ -378,6 +381,11 @@ begin
   Notebook1.PageIndex := 0;
 end;
 
+procedure TMainForm.ExcludeCheckBoxChange(Sender: TObject);
+begin
+  FixupAllIpHint;
+  FixupIpRangeHint;
+end;
 
 procedure TMainForm.BackButtonClick(Sender: TObject);
 begin
@@ -458,6 +466,35 @@ begin
   OptionsButton.setFocus;
 end;
 
+(*
+ let w be the timeout, then at each try the timeout value will be
+
+ try   timeout
+  1       w  =  2^(1-1) w
+  2      2w  =  2^(2-1) w
+  3      4w  =  2^(3-1) w
+  4      8w  =  2^(4-1) w
+  ...
+  i             2^(i-1) w
+  ...
+  n             2^(n-1) w
+
+Total wait for a request after n tries is
+  w * sum{i=1 to n} 2^(i-1)
+
+But sum{i=1 to n} 2^(i-1) is equal to
+    sum{i=0 to n-1} 2^i
+
+Now the sum{i=0 to k} 2^i is 2^(k+1) - 1 so
+   sum{i=0 to n-1} 2^i = 2^(n-1+1) - 1 = 2^n - 1
+
+So the wait time for one HTTP request done n tries is w *(2^n - 1)
+*)
+procedure TMainForm.CalcMaxRequestTime;
+begin
+  MaxRequestTimeProp := ScanTimeoutEdit.value * (intpower(2, ScanAttemptsEdit.value) - 1);
+end;
+
 procedure TMainForm.CheckBox1Change(Sender: TObject);
 var
   b: string;
@@ -521,36 +558,6 @@ begin
   FixupIpRangeHint;
 end;
 
-(*
- let w be the timeout, then at each try the timeout value will be
-
- try   timeout
-  1       w     2^(1-1) w
-  2      2w     2^(2-1) w
-  3      4w     2^(3-1) w
-  4      8w     2^(4-1) w
-  ...
-  i             2^(i-1) w
-  ...
-  n             2^(n-1) w
-
-So want to calculate total wait for a request after n tries is
-  w *sum{i=1 to n} 2^(i-1)
-
-But sum{i=1 to n} 2^(i-1) = sum{i=0 to n-1} 2^i
-
-Now the sum{i=0 to k} 2^i is 2^(k+1) - 1 so
-   sum{i=0 to n-1} 2^i = 2^(n-1+1) - 1 = 2^n - 1
-
-So the wait time for one HTTP request done n tries is w *(2^n - 1)
-*)
-
-function TMainForm.MaxRequestTime: single;
-begin
-  result := intpower(2, ScanAttemptsEdit.value) - 1;
-  result := result*ScanTimeoutEdit.value;
-end;
-
 procedure TMainForm.FixupAllIpHint;
 var
   mask: TIPv4;
@@ -559,7 +566,7 @@ var
 begin
   mask := not SubnetMask(SubnetBitsEdit.value);
   nips := mask.value - 2 - ExcludeListBox.Count*ord(ExcludeCheckBox.Checked);
-  ttime := round( nips * MaxRequestTime ) ;
+  ttime := round( nips * MaxRequestTimeProp ) ;
   FullRangeRadioButton.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
 end;
 
@@ -574,7 +581,7 @@ begin
     nips := llip.value - lfip.value + 1
       - ExcludeListBox.Count*ord(ExcludeCheckBox.Checked)
       + IncludeListBox.Count*ord(IncludeCheckBox.Checked);
-    ttime := round( nips * MaxRequestTime ) ;
+    ttime := round( nips * MaxRequestTimeProp ) ;
     RadioButton8.Hint := Format('Could take up to %s', [SecondsToStr(ttime)]);
     label23.Hint := RadioButton8.Hint;
     FirstIPEdit.Hint := RadioButton8.Hint;
@@ -617,6 +624,7 @@ begin
   ScanTimeoutEdit.Value := params.ScanTimeout;
   IncludeListBox.Items.assign(params.IncludeIPs);
   ExcludeListBox.Items.assign(params.ExcludeIPs);
+  CalcMaxRequestTime;
   FixupAllIpHint;
   FixupIpRangeHint;
 end;
@@ -652,98 +660,6 @@ begin
     end;
   end;
 end;
-
-(*
-procedure TMainForm.GetDevicesWithHttpScan;
-const
-  URLB = 'http://%s/cm?cmnd=';
-var
-  myHostname, myTopic, myIps: string;
-  code: integer;
-  url: string;
-  {$IFDEF TIME_HTTP_SCAN}
-  deb, fin: TDateTime;
-  {$ELSE}
-  r: integer;
-  {$ENDIF}
-
-  excount: integer;
-  incount: integer;
-  i: integer;
-  ip: TIPv4;
-
-  function FindValue(const key: string; var value: string): boolean;
-  var
-    p: integer;
-  begin
-    result := true;
-    p := pos('"' + key + '":"', value);
-    if p > 0 then begin
-      delete(value, 1, p + length(key)+3);
-      p := pos('"', value);
-      if p > 0 then begin
-        delete(value, p, maxint);
-        exit;
-      end;
-    end;
-    value := '';
-    result := false;
-  end;
-
-begin
-  Next2Button.Enabled := false;
-  Screen.Cursor := crHourGlass;
-  {$IFDEF TIME_HTTP_SCAN}
-  deb := time;
-  {$ENDIF}
-  try
-    fip.Dec;
-    while (fip < lip) do begin //200 do begin
-      fip.Inc;
-      myIps := fip.ToString;
-      url := Format(URLB, [myIps]);
-      myHostname := '';
-      myTopic := '';
-      {$IFNDEF TIME_HTTP_SCAN}
-      label11.Caption := 'Checking ' + myIps;
-      label11.Repaint;
-      delay(2);
-      {$ENDIF}
-      if not HttpRequest(url + 'hostname', code, myHostname, ScanAttemptsEdit.value, ScanTimeOutEdit.value*1000) then
-      //if not HttpRequest(url + 'hostname', code, myHostname) then
-        continue;
-      if not FindValue('Hostname', myHostname) then
-        continue;
-      if not HttpRequest(url + 'topic', code, myTopic, ScanAttemptsEdit.value, ScanTimeOutEdit.value*1000) then
-      //if not HttpRequest(url + 'topic', code, myTopic) then
-        continue;
-      if not FindValue('Topic', myTopic) then
-        continue;
-      {$IFNDEF TIME_HTTP_SCAN}
-      with DeviceGrid do begin
-         r := RowCount;
-         RowCount := RowCount+1;
-         cells[0, r] := '1';
-         cells[1, r] := myIps;
-         cells[2, r] := myTopic;
-         cells[3, r] := myHostname;
-         MainForm.newdev := true;
-      end;
-      notebook1.invalidate;
-      Delay(2);
-      {$ENDIF}
-    end;
-    {$IFDEF TIME_HTTP_SCAN}
-    fin := now;
-    log(Format('HTTP scan time: %s ms', [TimeToStr(fin-deb)]));
-    {$ENDIF}
-  finally
-    Screen.Cursor := crDefault;
-    next2Button.Enabled := true;
-    next2Button.SetFocus;
-  end;
-end;
-*)
 
 procedure TMainForm.GetDevicesWithHttpScan;
 const
@@ -876,7 +792,6 @@ begin
   end;
 end;
 
-
 function TMainForm.GetExtension: string;
 begin
   result := ExtensionEdit.Text;
@@ -915,6 +830,11 @@ begin
       dec(wd, colwidths[j]);
     colwidths[colcount-1] := wd;
   end;
+end;
+
+procedure TMainForm.IncludeCheckBoxChange(Sender: TObject);
+begin
+  FixupIpRangeHint;
 end;
 
 procedure TMainForm.IncludeListBoxDblClick(Sender: TObject);
@@ -1226,6 +1146,7 @@ end;
 
 procedure TMainForm.ScanAttemptsEditChange(Sender: TObject);
 begin
+  CalcMaxRequestTime;
   FixupAllIpHint;
   FixupIpRangeHint;
 end;

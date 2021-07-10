@@ -299,7 +299,7 @@ object MainForm: TMainForm
         BorderSpacing.Top = 6
         Caption = 'Exclude'
         Color = clDefault
-        OnChange = ScanAttemptsEditChange
+        OnChange = ExcludeCheckBoxChange
         ParentColor = False
         TabOrder = 11
       end
@@ -313,7 +313,7 @@ object MainForm: TMainForm
         BorderSpacing.Left = 12
         Caption = 'Include'
         Color = clDefault
-        OnChange = ScanAttemptsEditChange
+        OnChange = IncludeCheckBoxChange
         ParentColor = False
         TabOrder = 12
       end
